@@ -1,0 +1,123 @@
+@page "/browse/{CatalogueId:int}"
+@using Woistes.Domain
+@inject ICatalogueRepository Repository
+
+<h1>@(_catalogue?.Name ?? "Loading...")</h1>
+
+@if (_catalogue != null)
+{
+    <div class="browse-layout">
+        <div class="disk-list">
+            <h2>Disks</h2>
+            @foreach (var disk in _catalogue.Disks.OrderBy(d => d.DiskIndex))
+            {
+                <div class="disk-item @(_selectedDiskId == disk.Id ? "selected" : "")"
+                     @onclick="() => SelectDisk(disk.Id)">
+                    <strong>@disk.VolumeLabel</strong>
+                    <span class="disk-fs">@disk.FilesystemType</span>
+                </div>
+            }
+        </div>
+        <div class="entry-list">
+            @if (_breadcrumbs.Count > 0)
+            {
+                <nav class="breadcrumbs">
+                    <a @onclick="() => NavigateTo(null)" @onclick:preventDefault>Root</a>
+                    @foreach (var crumb in _breadcrumbs)
+                    {
+                        <span>/</span>
+                        <a @onclick="() => NavigateTo(crumb.Id)" @onclick:preventDefault>@crumb.Name</a>
+                    }
+                </nav>
+            }
+            @if (_entries == null)
+            {
+                <p>Select a disk to browse.</p>
+            }
+            else
+            {
+                <table class="entry-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Size</th>
+                            <th>Modified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entry in _entries)
+                        {
+                            <tr>
+                                <td>
+                                    @if (entry.IsDirectory)
+                                    {
+                                        <a @onclick="() => NavigateTo(entry.Id)" @onclick:preventDefault>@entry.Name/</a>
+                                    }
+                                    else
+                                    {
+                                        @entry.Name
+                                    }
+                                </td>
+                                <td>@(entry.IsDirectory ? "" : FormatSize(entry.Size))</td>
+                                <td>@entry.ModifiedDate?.ToString("yyyy-MM-dd HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int CatalogueId { get; set; }
+
+    private Catalogue? _catalogue;
+    private int? _selectedDiskId;
+    private List<CatalogueEntry>? _entries;
+    private List<CatalogueEntry> _breadcrumbs = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _catalogue = await Repository.GetByIdAsync(CatalogueId);
+    }
+
+    private async Task SelectDisk(int diskId)
+    {
+        _selectedDiskId = diskId;
+        _breadcrumbs.Clear();
+        _entries = await Repository.GetChildrenAsync(diskId, null);
+    }
+
+    private async Task NavigateTo(long? parentId)
+    {
+        if (_selectedDiskId == null) return;
+
+        if (parentId == null)
+        {
+            _breadcrumbs.Clear();
+        }
+        else
+        {
+            var idx = _breadcrumbs.FindIndex(b => b.Id == parentId);
+            if (idx >= 0)
+                _breadcrumbs = _breadcrumbs.Take(idx + 1).ToList();
+            else
+            {
+                var entry = _entries?.FirstOrDefault(e => e.Id == parentId);
+                if (entry != null)
+                    _breadcrumbs.Add(entry);
+            }
+        }
+
+        _entries = await Repository.GetChildrenAsync(_selectedDiskId.Value, parentId);
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024):F1} MB";
+        return $"{bytes / (1024.0 * 1024 * 1024):F1} GB";
+    }
+}

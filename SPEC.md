@@ -26,9 +26,10 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 - **Target framework upgrade**: all projects migrated from net8.0 to net10.0
 - **ASP.NET Core Web API** (`Woistes.Api`): minimal API with endpoints for CTF upload/import, catalogue CRUD, tree browsing (lazy-load children by disk/parent), and paginated search with glob patterns. **14 integration tests** using WebApplicationFactory + InMemory DB.
 
+- **Blazor Web UI** (merged into `Woistes.Api`): Blazor Server components for catalogue dashboard, CTF upload, tree browser with breadcrumbs, and paginated search. Served alongside the REST API from a single host.
+
 ### Next
 
-- **Blazor Web UI** (`Woistes.Web`): file upload, tree browser, search page
 - **Docker & Kubernetes**: Dockerfile, docker-compose for local dev, k8s manifests
 
 ---
@@ -49,7 +50,7 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 | Component | Technology |
 |-----------|-----------|
 | Container runtime | Azure AKS (Kubernetes) |
-| Application image | .NET 8+ on distroless container (`mcr.microsoft.com/dotnet/runtime-deps`) |
+| Application image | .NET 10 on distroless container (`mcr.microsoft.com/dotnet/runtime-deps`) |
 | Database | SQL Server on AKS with PVC-backed persistent storage |
 | Ingress | NGINX Ingress Controller or Azure Application Gateway |
 
@@ -215,7 +216,7 @@ Directory `start_index` values reference the **global file list** (cumulative in
 | Mes CD 2.CTF | 5.2 MB | 133 | Large | CD collection continued |
 | mypassport1000.CTF | 20.3 MB | 4* | ~306,000 | WD My Passport 1 TB (NTFS) |
 
-*Header declares 5 disks but one (TrueCrypt volume) has no FS marker and cannot be parsed.
+*Header declares 5 disks but one (TC volume) has no FS marker and cannot be parsed.
 
 ---
 
@@ -274,14 +275,17 @@ docker-compose.yml          # Local dev (app + SQL Server)
 
 ---
 
+## To Do (Phase 2)
+
+- **Helm chart** for deployment
+- **CI/CD pipeline** (GitHub Actions)
+
 ## Future Phases (Out of Scope)
 
 - **Volume scanning** - local agent/service that scans actual disks and pushes results to the API
 - **Plugin system** - extensible metadata extractors (MP3 tags, EXIF, PDF info, Office metadata)
 - **Multi-user / multi-tenant** support
 - **Authentication** (Azure AD / Entra ID)
-- **Helm chart** for deployment
-- **CI/CD pipeline** (GitHub Actions or Azure DevOps)
 - **Full-text search** with SQL Server FTS or Elasticsearch
 - **Thumbnail storage** (Azure Blob or PVC)
 - **Diff/changelog** - compare current scan vs. previous to show what changed
@@ -295,7 +299,7 @@ docker-compose.yml          # Local dev (app + SQL Server)
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| .NET version | .NET 8 LTS | Long-term support, mature ecosystem |
+| .NET version | .NET 10 | Latest runtime, matches installed SDK |
 | Container base | `mcr.microsoft.com/dotnet/runtime-deps` (distroless) | Minimal attack surface, small image |
 | ORM | EF Core | First-class .NET support, migrations, LINQ |
 | Hierarchy storage | Adjacency list (ParentId) + materialized FullPath column | Simple, fast path-based search; recursive CTE for tree expansion |
@@ -308,9 +312,8 @@ docker-compose.yml          # Local dev (app + SQL Server)
 
 ## References
 
-- WhereIsIt? 3.03b by Robert Galle (2001) - `WhereIsIt/` folder in this repository
+- WhereIsIt? 3.03b by Robert Galle (2001) 
 - WhereIsIt DescAPI 2.0 - `WhereIsIt/DescAPI/DescAPI.h`
-- Sample CTF files - `sampleCTF/` folder in this repository
 - [Azure AKS Documentation](https://learn.microsoft.com/en-us/azure/aks/)
 - [SQL Server on Kubernetes](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-kubernetes-best-practices)
 - [Distroless .NET containers](https://learn.microsoft.com/en-us/dotnet/core/docker/container-images)

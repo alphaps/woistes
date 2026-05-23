@@ -1,0 +1,86 @@
+@page "/search"
+@using Woistes.Domain
+@inject ICatalogueRepository Repository
+
+<h1>Search</h1>
+
+<div class="search-bar">
+    <input @bind="_pattern" @bind:event="oninput" placeholder="*.txt, photo*.*" />
+    <button @onclick="DoSearch">Search</button>
+</div>
+
+@if (_results != null)
+{
+    <p class="search-count">@_totalCount result(s) found</p>
+    <table class="entry-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Full Path</th>
+                <th>Size</th>
+                <th>Modified</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entry in _results)
+            {
+                <tr>
+                    <td>@entry.Name</td>
+                    <td>@entry.FullPath</td>
+                    <td>@FormatSize(entry.Size)</td>
+                    <td>@entry.ModifiedDate?.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (_totalCount > _skip + _take)
+    {
+        <button @onclick="NextPage">Next</button>
+    }
+    @if (_skip > 0)
+    {
+        <button @onclick="PrevPage">Previous</button>
+    }
+}
+
+@code {
+    private string _pattern = "";
+    private List<CatalogueEntry>? _results;
+    private int _totalCount;
+    private int _skip;
+    private int _take = 50;
+
+    private async Task DoSearch()
+    {
+        if (string.IsNullOrWhiteSpace(_pattern)) return;
+        _skip = 0;
+        await ExecuteSearch();
+    }
+
+    private async Task NextPage()
+    {
+        _skip += _take;
+        await ExecuteSearch();
+    }
+
+    private async Task PrevPage()
+    {
+        _skip = Math.Max(0, _skip - _take);
+        await ExecuteSearch();
+    }
+
+    private async Task ExecuteSearch()
+    {
+        _results = await Repository.SearchAsync(_pattern, null, _skip, _take);
+        _totalCount = await Repository.SearchCountAsync(_pattern, null);
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024):F1} MB";
+        return $"{bytes / (1024.0 * 1024 * 1024):F1} GB";
+    }
+}

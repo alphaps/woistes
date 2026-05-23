@@ -1,0 +1,13 @@
+@inherits LayoutComponentBase
+
+<div class="layout">
+    <nav class="sidebar">
+        <div class="brand">Woistes</div>
+        <NavLink href="/" Match="NavLinkMatch.All">Catalogues</NavLink>
+        <NavLink href="/upload">Upload</NavLink>
+        <NavLink href="/search">Search</NavLink>
+    </nav>
+    <main class="content">
+        @Body
+    </main>
+</div>

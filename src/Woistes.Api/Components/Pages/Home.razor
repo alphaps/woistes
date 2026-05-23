@@ -1,0 +1,57 @@
+@page "/"
+@using Woistes.Domain
+@inject ICatalogueRepository Repository
+
+<h1>Catalogues</h1>
+
+@if (_catalogues == null)
+{
+    <p>Loading...</p>
+}
+else if (_catalogues.Count == 0)
+{
+    <p>No catalogues imported yet. <a href="/upload">Upload a CTF file</a> to get started.</p>
+}
+else
+{
+    <table class="catalogue-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Disks</th>
+                <th>Files</th>
+                <th>Folders</th>
+                <th>Imported</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in _catalogues)
+            {
+                <tr>
+                    <td><a href="/browse/@c.Id">@c.Name</a></td>
+                    <td>@c.Disks.Count</td>
+                    <td>@c.FileCount</td>
+                    <td>@c.FolderCount</td>
+                    <td>@c.ImportedDate.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td><button @onclick="() => Delete(c.Id)">Delete</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Catalogue>? _catalogues;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _catalogues = await Repository.GetAllAsync();
+    }
+
+    private async Task Delete(int id)
+    {
+        await Repository.DeleteAsync(id);
+        _catalogues = await Repository.GetAllAsync();
+    }
+}
