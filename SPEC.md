@@ -22,10 +22,11 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
   - Detects disk boundaries via filesystem type string scanning
   - Resync logic to recover from alignment gaps
   - **25 passing tests** covering header parsing, file entries, directory tree, sizes, full paths, and multi-disk support across all 5 sample files
+- **EF Core data layer** (`Woistes.Infrastructure`): DbContext, entity configurations (with indexes on Name/FullPath/ParentId), `ICatalogueRepository` + SQL Server implementation with search (LIKE), tree browsing, and DI extension method
+- **Target framework upgrade**: all projects migrated from net8.0 to net10.0
 
 ### Next
 
-- **EF Core data layer** (`Woistes.Infrastructure`): SQL Server schema, migrations, repository
 - **ASP.NET Core Web API** (`Woistes.Api`): upload endpoint, catalogue/browse/search endpoints
 - **Blazor Web UI** (`Woistes.Web`): file upload, tree browser, search page
 - **Docker & Kubernetes**: Dockerfile, docker-compose for local dev, k8s manifests
