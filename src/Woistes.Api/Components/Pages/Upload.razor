@@ -11,6 +11,11 @@
     <InputFile OnChange="HandleFileSelected" accept=".ctf,.CTF" />
 </div>
 
+@if (_loading)
+{
+    <p>Parsing...</p>
+}
+
 @if (_message != null)
 {
     <p class="upload-message @(_isError ? "error" : "success")">@_message</p>
@@ -19,10 +24,14 @@
 @code {
     private string? _message;
     private bool _isError;
+    private bool _loading;
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
         _message = null;
+        _loading = true;
+        StateHasChanged();
+        await Task.Yield();
         var file = e.File;
 
         if (file.Size > 50 * 1024 * 1024)
@@ -49,6 +58,10 @@
         {
             _message = $"Parse error: {ex.Message}";
             _isError = true;
+        }
+        finally
+        {
+            _loading = false;
         }
     }
 }

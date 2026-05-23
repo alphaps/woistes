@@ -1,21 +1,32 @@
+using Microsoft.EntityFrameworkCore;
 using Woistes.Api.Components;
 using Woistes.Api.Endpoints;
 using Woistes.CtfParser;
+using Woistes.Domain;
 using Woistes.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("Woistes")
-    ?? "Server=localhost;Database=Woistes;Trusted_Connection=True;TrustServerCertificate=True";
+var connectionString = builder.Configuration.GetConnectionString("Woistes");
 
-builder.Services.AddWoistesInfrastructure(connectionString);
+if (string.IsNullOrEmpty(connectionString))
+{
+    builder.Services.AddDbContext<WoistesDbContext>(options =>
+        options.UseInMemoryDatabase("Woistes"));
+    builder.Services.AddScoped<ICatalogueRepository, CatalogueRepository>();
+}
+else
+{
+    builder.Services.AddWoistesInfrastructure(connectionString);
+}
+
 builder.Services.AddSingleton<ICtfParser, CtfFileParser>();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
 
-app.UseStaticFiles();
+app.MapStaticAssets();
 app.UseAntiforgery();
 
 app.MapGet("/health", () => Results.Ok("healthy"));
