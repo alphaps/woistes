@@ -1,0 +1,26 @@
+replicaCount: 1
+
+image:
+  repository: woistes
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  host: woistes.local
+
+sqlserver:
+  password: Woistes_Prod_Change_Me!
+  storage: 10Gi
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi

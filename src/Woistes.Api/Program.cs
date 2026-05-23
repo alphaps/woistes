@@ -26,6 +26,13 @@ builder.Services.AddRazorComponents()
 
 var app = builder.Build();
 
+if (!string.IsNullOrEmpty(connectionString))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<WoistesDbContext>();
+    db.Database.Migrate();
+}
+
 app.MapStaticAssets();
 app.UseAntiforgery();
 

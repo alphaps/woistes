@@ -28,9 +28,11 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 
 - **Blazor Web UI** (merged into `Woistes.Api`): Blazor Server components for catalogue dashboard, CTF upload, tree browser with breadcrumbs, and paginated search. Served alongside the REST API from a single host.
 
+- **Docker & Kubernetes**: multi-stage Dockerfile, docker-compose (app + SQL Server), Helm chart with deployment, service, StatefulSet SQL Server, secrets, and optional ingress. Auto-migration on startup.
+
 ### Next
 
-- **Docker & Kubernetes**: Dockerfile, docker-compose for local dev, k8s manifests
+- Items from "To Do (Phase 2)" section
 
 ---
 
