@@ -71,18 +71,37 @@ public class CatalogueRepository : ICatalogueRepository
 
     private IQueryable<CatalogueEntry> BuildSearchQuery(string pattern, int? catalogueId)
     {
-        var sqlPattern = pattern.Replace('*', '%').Replace('?', '_');
+        var likePattern = pattern.Replace('*', '%').Replace('?', '_');
 
-        var query = _db.Entries.Where(e => EF.Functions.Like(e.Name, sqlPattern));
+        IQueryable<CatalogueEntry> query;
+        try
+        {
+            query = _db.Entries.Where(e => EF.Functions.Like(e.Name, likePattern));
+            _ = query.Take(0).ToList();
+        }
+        catch (InvalidOperationException)
+        {
+            query = _db.Entries.AsEnumerable()
+                .Where(e => MatchesGlob(e.Name, pattern))
+                .AsQueryable();
+        }
 
         if (catalogueId.HasValue)
         {
             var diskIds = _db.Disks
                 .Where(d => d.CatalogueId == catalogueId.Value)
-                .Select(d => d.Id);
+                .Select(d => d.Id)
+                .ToList();
             query = query.Where(e => diskIds.Contains(e.DiskId));
         }
 
         return query;
+    }
+
+    private static bool MatchesGlob(string name, string pattern)
+    {
+        var regex = "^" + System.Text.RegularExpressions.Regex.Escape(pattern)
+            .Replace("\\*", ".*").Replace("\\?", ".") + "$";
+        return System.Text.RegularExpressions.Regex.IsMatch(name, regex, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
     }
 }
