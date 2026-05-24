@@ -8,7 +8,7 @@ COPY src/Woistes.Api/Woistes.Api.csproj src/Woistes.Api/
 RUN dotnet restore src/Woistes.Api/Woistes.Api.csproj
 
 COPY src/ src/
-RUN dotnet publish src/Woistes.Api/Woistes.Api.csproj -c Release -o /app --no-restore
+RUN dotnet publish src/Woistes.Api/Woistes.Api.csproj -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
