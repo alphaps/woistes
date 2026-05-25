@@ -29,7 +29,26 @@ public class CatalogueRepository : ICatalogueRepository
 
     public async Task<Catalogue> AddAsync(Catalogue catalogue, CancellationToken ct = default)
     {
+        var entriesByDiskIndex = catalogue.Disks
+            .Select((d, i) => (Index: i, Entries: d.Entries.ToList()))
+            .ToList();
+        foreach (var disk in catalogue.Disks)
+            disk.Entries = [];
+
         _db.Catalogues.Add(catalogue);
+        await _db.SaveChangesAsync(ct);
+
+        foreach (var (index, entries) in entriesByDiskIndex)
+        {
+            var diskId = catalogue.Disks[index].Id;
+            foreach (var entry in entries)
+            {
+                entry.DiskId = diskId;
+                entry.Children = [];
+            }
+            _db.Entries.AddRange(entries);
+        }
+
         await _db.SaveChangesAsync(ct);
         return catalogue;
     }
