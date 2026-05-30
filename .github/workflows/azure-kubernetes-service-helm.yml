@@ -40,12 +40,11 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_CONTAINER_REGISTRY: "your-azure-container-registry"
-  CONTAINER_NAME: "your-container-name"
-  RESOURCE_GROUP: "your-resource-group"
-  CLUSTER_NAME: "your-cluster-name"
-  CHART_PATH: "your-chart-path"
-  CHART_OVERRIDE_PATH: "your-chart-override-path"
+  AZURE_CONTAINER_REGISTRY: "woistesregistry"
+  CONTAINER_NAME: "woistes"
+  RESOURCE_GROUP: "woistes_group"
+  CLUSTER_NAME: "woistes"
+  CHART_PATH: "k8s"
 
 jobs:
   buildImage:
@@ -110,9 +109,9 @@ jobs:
         with:
           renderEngine: "helm"
           helmChart: ${{ env.CHART_PATH }}
-          overrideFiles: ${{ env.CHART_OVERRIDE_PATH }}
           overrides: |
-            replicas:2
+            image.repository:${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}
+            image.tag:${{ github.sha }}
           helm-version: "latest"
         id: bake
 

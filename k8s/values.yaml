@@ -10,8 +10,8 @@ service:
   port: 80
 
 ingress:
-  enabled: false
-  host: woistes.local
+  enabled: true
+  host: ""
 
 sqlserver:
   password: Woistes_Prod_Change_Me!
