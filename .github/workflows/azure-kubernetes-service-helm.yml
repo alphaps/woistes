@@ -132,3 +132,19 @@ jobs:
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
             ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+
+      # Remove old images from ACR (keep 5 most recent)
+      # Requires ACR Tasks (blocked on some subscriptions):
+      # - name: Clean up old ACR images (ACR Tasks)
+      #   run: |
+      #     az acr run --cmd "acr purge --filter '${{ env.CONTAINER_NAME }}:.*' --ago 7d --untagged --keep 5" --registry ${{ env.AZURE_CONTAINER_REGISTRY }} /dev/null
+      - name: Clean up old ACR images
+        run: |
+          TAGS=$(az acr repository show-tags --name ${{ env.AZURE_CONTAINER_REGISTRY }} --repository ${{ env.CONTAINER_NAME }} --orderby time_desc -o tsv)
+          COUNT=0
+          for TAG in $TAGS; do
+            COUNT=$((COUNT + 1))
+            if [ $COUNT -gt 5 ]; then
+              az acr repository delete --name ${{ env.AZURE_CONTAINER_REGISTRY }} --image ${{ env.CONTAINER_NAME }}:$TAG --yes
+            fi
+          done
