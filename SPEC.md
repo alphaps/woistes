@@ -32,11 +32,13 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 
 - **CI/CD pipeline** (GitHub Actions): build, push to ACR, deploy to AKS via Helm bake, old image cleanup. OIDC auth with federated credentials (no secrets stored).
 - **Helm chart hardened for AKS**: ingressClassName for NGINX, SQL Server securityContext (runAsUser 0, fsGroup 10001) for Azure container runtime compatibility.
-- **Google OAuth authentication**: cookie-based auth with Google login, email allowlist middleware (403 for non-permitted emails). Allowed emails configured via Kubernetes secret (CSV) or appsettings (array). User-secrets for local dev. 7 new auth tests.
+- **Google OAuth authentication**: cookie-based auth with Google login, email allowlist middleware (403 for non-permitted emails). Allowed emails configured via Kubernetes secret (CSV) or appsettings (array). User-secrets for local dev. Google ClientId/ClientSecret/AllowedEmails passed as Helm overrides from GitHub Actions secrets (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_EMAILS`). 7 new auth tests.
+- **Public access via NGINX ingress on AKS**: documented in [docs/aks-networking.md](docs/aks-networking.md) — covers the LB health-probe path fix and the HTTP-only OAuth cookie workaround.
 
 ### Next
 
 - Items from "Future Phases" section
+- **TLS / HTTPS** for the public endpoint (cert-manager + Let's Encrypt), then revert the HTTP-only OAuth cookie workaround
 
 ---
 
