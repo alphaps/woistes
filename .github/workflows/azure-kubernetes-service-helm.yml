@@ -132,6 +132,27 @@ jobs:
           admin: 'false'
           use-kubelogin: 'true'
 
+      # Deploys application based on Helm chart - could replace the bake and deploy steps below with a direct Helm upgrade/install command, but using the bake and deploy actions allows for more flexibility (e.g. easily swapping out render engines, or adding additional steps between bake and deploy)
+      # --atomic auto-rolls-back on a failed deploy, avoiding the stuck-release problem.
+      # --timeout ensures the deploy doesn't get stuck indefinitely (e.g. if your probes are misconfigured and your pods never become healthy, the deploy will eventually fail and roll back instead of being stuck in a pending state)
+      # 1/ The Azure/k8s-deploy@v4 action does more than apply YAML:
+      #  - Built-in blue-green / canary strategies with traffic management (e.g. with Azure Front Door or Application Gateway) and automatic rollback on failure.
+      #  - Automatic image-pull-secret handling and resource annotation for change tracking.
+      #  - With Helm you get Helm's own --wait --atomic instead, which is good but different.
+      # 2/ Helm release state lives in the cluster (as a secret), so if a deploy fails partway through, the release can get stuck in a pending state and block future deploys until you manually intervene with helm rollback or helm uninstall --force. The stateless apply approach with k8s-deploy doesn't have this problem, since it doesn't rely on any in-cluster state to track releases.
+      # 3/ A classic Helm pain: an upgrade that times out leaves the release in pending-upgrade status, and the next deploy errors with "another operation is in progress." You then need helm rollback or --force. The stateless apply approach never has this failure mode.
+      # 4/ helm upgrade won't restart pods on a latest tag change alone, so we also set the image tag to the git sha to ensure a new image triggers a redeploy
+      #
+      # - name: Deploy with Helm
+      #     run: |
+      #       helm upgrade --install woistes ./k8s \
+      #         --atomic --timeout 5m \
+      #         --set image.repository=${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }} \
+      #         --set image.tag=${{ github.sha }} \
+      #         --set auth.googleClientId='${{ secrets.GOOGLE_CLIENT_ID }}' \
+      #         --set auth.googleClientSecret='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
+      #         --set "auth.allowedEmails={${{ secrets.ALLOWED_EMAILS }}}"
+              
       # Runs Helm to create manifest files
       - name: Bake deployment
         uses: azure/k8s-bake@v2

@@ -36,11 +36,13 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 - **Logout**: `POST /logout` (sidebar shows signed-in email + Sign out button), redirects to an anonymous `/loggedout` confirmation page that links back to login. Login challenge sends `prompt=select_account` so users can sign in with a different Google account.
 - **Access-denied UX**: a non-allowlisted (but Google-authenticated) user is redirected to an anonymous `/denied` page naming their account, with a "Sign out & switch account" button — instead of a bare 403 that trapped them. The allowlist middleware exempts `/denied`, `/login`, `/logout`, `/loggedout`, `/health` so blocked users can escape. 5 auth tests total for logout + denied flow.
 - **Public access via NGINX ingress on AKS**: documented in [docs/aks-networking.md](docs/aks-networking.md) — covers the LB health-probe path fix and the HTTP-only OAuth cookie workaround.
+- **Configurable ingress class**: `ingress.className` value (defaults to `nginx` for AKS; set to `traefik` for Rancher Desktop / k3s) so the same chart works locally and in the cloud.
+- **Resilient startup migration** (`DatabaseInitializer`): tolerates concurrent "database/object already exists" errors (rolling-deploy race where two pods migrate at once) and retries transient failures, instead of crash-looping. 5 new tests.
 
 ### Next
 
-- Items from "Future Phases" section
 - **TLS / HTTPS** for the public endpoint (cert-manager + Let's Encrypt), then revert the HTTP-only OAuth cookie workaround
+- Items from "Future Phases" section
 
 ---
 
@@ -284,11 +286,6 @@ docker-compose.yml          # Local dev (app + SQL Server)
 ```
 
 ---
-
-## To Do (Phase 2)
-
-- **Helm chart** for deployment
-- **CI/CD pipeline** (GitHub Actions)
 
 ## Future Phases (Out of Scope)
 

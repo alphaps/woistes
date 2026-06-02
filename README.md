@@ -136,6 +136,33 @@ The chart deploys:
 - Secret for the SA password / connection string
 - Optional ingress (disabled by default)
 
+### Local testing on Rancher Desktop
+
+Rancher Desktop uses **Traefik** (not NGINX) as its ingress controller, so set
+`ingress.className=traefik`. Build the image and install/upgrade the chart:
+
+```powershell
+docker build -t woistes:latest .
+
+helm upgrade --install woistes ./k8s --kube-context rancher-desktop `
+  --set ingress.className=traefik `
+  --set auth.googleClientId="YOUR_ID" `
+  --set auth.googleClientSecret="YOUR_SECRET" `
+  --set "auth.allowedEmails={you@gmail.com}"
+```
+
+The app is served at `http://localhost/` (add `http://localhost/signin-google`
+as an authorized redirect URI in Google Console).
+
+> **Picking up code changes:** the image tag is `latest` with
+> `pullPolicy: IfNotPresent`, so after rebuilding the image you must restart the
+> running pod — `helm upgrade` alone won't, since the manifests are unchanged:
+>
+> ```powershell
+> docker build -t woistes:latest .
+> kubectl --context rancher-desktop rollout restart deployment woistes
+> ```
+
 ## Project Structure
 
 ```
