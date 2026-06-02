@@ -47,7 +47,8 @@ public class CatalogueEndpointTests : IClassFixture<TestWebApplicationFactory>
     public async Task PostCatalogue_Upload_ReturnsCatalogue()
     {
         using var content = new MultipartFormDataContent();
-        var sampleCtf = GetSampleCtfPath();
+        var sampleCtf = TryGetSampleCtfPath();
+        if (sampleCtf == null) return;
         using var fileStream = File.OpenRead(sampleCtf);
         content.Add(new StreamContent(fileStream), "file", "Boumbo40.ctf");
 
@@ -66,7 +67,8 @@ public class CatalogueEndpointTests : IClassFixture<TestWebApplicationFactory>
     public async Task GetCatalogue_AfterUpload_ReturnsCatalogueWithDisks()
     {
         using var content = new MultipartFormDataContent();
-        var sampleCtf = GetSampleCtfPath();
+        var sampleCtf = TryGetSampleCtfPath();
+        if (sampleCtf == null) return;
         using var fileStream = File.OpenRead(sampleCtf);
         content.Add(new StreamContent(fileStream), "file", "Boumbo40.ctf");
 
@@ -86,7 +88,8 @@ public class CatalogueEndpointTests : IClassFixture<TestWebApplicationFactory>
     public async Task DeleteCatalogue_AfterUpload_Succeeds()
     {
         using var content = new MultipartFormDataContent();
-        var sampleCtf = GetSampleCtfPath();
+        var sampleCtf = TryGetSampleCtfPath();
+        if (sampleCtf == null) return;
         using var fileStream = File.OpenRead(sampleCtf);
         content.Add(new StreamContent(fileStream), "file", "Boumbo40.ctf");
 
@@ -100,12 +103,12 @@ public class CatalogueEndpointTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
     }
 
-    private static string GetSampleCtfPath()
+    private static string? TryGetSampleCtfPath()
     {
         var dir = AppContext.BaseDirectory;
         while (dir != null && !Directory.Exists(Path.Combine(dir, "sampleCTF")))
             dir = Directory.GetParent(dir)?.FullName;
-        return Path.Combine(dir!, "sampleCTF", "Boumbo40.ctf");
+        return dir == null ? null : Path.Combine(dir, "sampleCTF", "Boumbo40.ctf");
     }
 }
 

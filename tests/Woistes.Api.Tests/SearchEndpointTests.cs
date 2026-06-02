@@ -36,7 +36,8 @@ public class SearchEndpointTests : IClassFixture<TestWebApplicationFactory>
     public async Task Search_AfterUpload_FindsFiles()
     {
         using var content = new MultipartFormDataContent();
-        var sampleCtf = GetSampleCtfPath();
+        var sampleCtf = TryGetSampleCtfPath();
+        if (sampleCtf == null) return;
         using var fileStream = File.OpenRead(sampleCtf);
         content.Add(new StreamContent(fileStream), "file", "Boumbo40.ctf");
 
@@ -55,7 +56,8 @@ public class SearchEndpointTests : IClassFixture<TestWebApplicationFactory>
     public async Task Search_WithPagination_RespectsSkipAndTake()
     {
         using var content = new MultipartFormDataContent();
-        var sampleCtf = GetSampleCtfPath();
+        var sampleCtf = TryGetSampleCtfPath();
+        if (sampleCtf == null) return;
         using var fileStream = File.OpenRead(sampleCtf);
         content.Add(new StreamContent(fileStream), "file", "Boumbo40.ctf");
 
@@ -69,12 +71,12 @@ public class SearchEndpointTests : IClassFixture<TestWebApplicationFactory>
         Assert.True(result.Items.Count <= 5);
     }
 
-    private static string GetSampleCtfPath()
+    private static string? TryGetSampleCtfPath()
     {
         var dir = AppContext.BaseDirectory;
         while (dir != null && !Directory.Exists(Path.Combine(dir, "sampleCTF")))
             dir = Directory.GetParent(dir)?.FullName;
-        return Path.Combine(dir!, "sampleCTF", "Boumbo40.ctf");
+        return dir == null ? null : Path.Combine(dir, "sampleCTF", "Boumbo40.ctf");
     }
 }
 

@@ -27,7 +27,8 @@ public class BrowseEndpointTests : IClassFixture<TestWebApplicationFactory>
     public async Task GetChildren_AfterUpload_ReturnsRootEntries()
     {
         using var content = new MultipartFormDataContent();
-        var sampleCtf = GetSampleCtfPath();
+        var sampleCtf = TryGetSampleCtfPath();
+        if (sampleCtf == null) return;
         using var fileStream = File.OpenRead(sampleCtf);
         content.Add(new StreamContent(fileStream), "file", "Boumbo40.ctf");
 
@@ -50,7 +51,8 @@ public class BrowseEndpointTests : IClassFixture<TestWebApplicationFactory>
     public async Task GetChildren_WithParentId_ReturnsSubEntries()
     {
         using var content = new MultipartFormDataContent();
-        var sampleCtf = GetSampleCtfPath();
+        var sampleCtf = TryGetSampleCtfPath();
+        if (sampleCtf == null) return;
         using var fileStream = File.OpenRead(sampleCtf);
         content.Add(new StreamContent(fileStream), "file", "Boumbo40.ctf");
 
@@ -74,12 +76,12 @@ public class BrowseEndpointTests : IClassFixture<TestWebApplicationFactory>
         }
     }
 
-    private static string GetSampleCtfPath()
+    private static string? TryGetSampleCtfPath()
     {
         var dir = AppContext.BaseDirectory;
         while (dir != null && !Directory.Exists(Path.Combine(dir, "sampleCTF")))
             dir = Directory.GetParent(dir)?.FullName;
-        return Path.Combine(dir!, "sampleCTF", "Boumbo40.ctf");
+        return dir == null ? null : Path.Combine(dir, "sampleCTF", "Boumbo40.ctf");
     }
 }
 

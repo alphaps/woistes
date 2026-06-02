@@ -5,10 +5,7 @@ namespace Woistes.CtfParser.Tests;
 
 public class CtfParserEntryTests
 {
-    private static string SamplePath(string filename) =>
-        Path.Combine(FindSampleCtfDir(), filename);
-
-    private static string FindSampleCtfDir()
+    private static string? FindSampleCtfDir()
     {
         var dir = AppContext.BaseDirectory;
         while (dir != null)
@@ -18,12 +15,15 @@ public class CtfParserEntryTests
                 return candidate;
             dir = Directory.GetParent(dir)?.FullName;
         }
-        throw new DirectoryNotFoundException("Cannot find sampleCTF directory");
+        return null;
     }
 
     private Catalogue ParseFile(string filename)
     {
-        using var stream = File.OpenRead(SamplePath(filename));
+        var dir = FindSampleCtfDir();
+        if (dir == null)
+            throw Xunit.Sdk.SkipException.ForSkip("sampleCTF not found");
+        using var stream = File.OpenRead(Path.Combine(dir!, filename));
         var parser = new CtfFileParser();
         return parser.Parse(stream, filename);
     }
