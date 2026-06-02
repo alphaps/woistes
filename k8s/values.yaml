@@ -12,6 +12,9 @@ service:
 ingress:
   enabled: true
   host: ""
+  # Ingress controller class. "nginx" for AKS; override to "traefik" for
+  # Rancher Desktop / k3s (e.g. --set ingress.className=traefik).
+  className: nginx
 
 sqlserver:
   password: Woistes_Prod_Change_Me!

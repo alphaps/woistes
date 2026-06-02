@@ -84,7 +84,16 @@ if (!string.IsNullOrEmpty(connectionString))
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<WoistesDbContext>();
-    db.Database.Migrate();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
+        .CreateLogger("DatabaseInitializer");
+    DatabaseInitializer.Run(
+        () => db.Database.Migrate(),
+        maxAttempts: 12,
+        onRetry: (attempt, ex) =>
+        {
+            logger.LogWarning(ex, "Migration attempt {Attempt} failed, retrying in 5s", attempt);
+            Thread.Sleep(TimeSpan.FromSeconds(5));
+        });
 }
 
 app.UseAuthentication();
