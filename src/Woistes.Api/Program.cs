@@ -63,6 +63,8 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddCascadingAuthenticationState();
+
 var app = builder.Build();
 
 if (!string.IsNullOrEmpty(connectionString))
@@ -86,11 +88,24 @@ app.MapGet("/login", () => Results.Challenge(new AuthenticationProperties
     RedirectUri = "/"
 }, [GoogleDefaults.AuthenticationScheme])).AllowAnonymous();
 
-app.MapGet("/logout", async (HttpContext ctx) =>
+app.MapPost("/logout", async (HttpContext ctx) =>
 {
     await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-    return Results.Redirect("/login");
+    return Results.Redirect("/loggedout");
 }).AllowAnonymous();
+
+app.MapGet("/loggedout", () => Results.Content(
+    """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head><meta charset="utf-8"><title>Signed out - Woistes</title>
+    <style>body{font-family:system-ui,sans-serif;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;height:100vh;margin:0;background:#f5f5f5}
+    a{margin-top:1rem;padding:.6rem 1.2rem;background:#1a73e8;color:#fff;
+    text-decoration:none;border-radius:4px}</style></head>
+    <body><h1>You've been signed out</h1><a href="/login">Sign in again</a></body>
+    </html>
+    """, "text/html")).AllowAnonymous();
 
 app.MapCatalogueEndpoints();
 app.MapBrowseEndpoints();

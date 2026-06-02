@@ -6,6 +6,17 @@
         <NavLink href="/" Match="NavLinkMatch.All">Catalogues</NavLink>
         <NavLink href="/upload">Upload</NavLink>
         <NavLink href="/search">Search</NavLink>
+        <div class="sidebar-footer">
+            <AuthorizeView>
+                <Authorized>
+                    <div class="user-email">@context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</div>
+                    <form action="/logout" method="post">
+                        <AntiforgeryToken />
+                        <button type="submit" class="logout-btn">Sign out</button>
+                    </form>
+                </Authorized>
+            </AuthorizeView>
+        </div>
     </nav>
     <main class="content">
         @Body

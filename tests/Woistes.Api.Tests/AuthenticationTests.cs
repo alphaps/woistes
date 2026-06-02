@@ -93,4 +93,27 @@ public class AuthenticationTests : IClassFixture<TestWebApplicationFactory>
         Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.NotEqual(HttpStatusCode.Forbidden, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Logout_RedirectsToLoggedOutPage()
+    {
+        var client = _factory.CreateAnonymousClient();
+
+        var response = await client.PostAsync("/logout", null);
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal("/loggedout", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
+    public async Task LoggedOutPage_IsAccessibleAnonymously()
+    {
+        var client = _factory.CreateAnonymousClient();
+
+        var response = await client.GetAsync("/loggedout");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Contains("signed out", body, StringComparison.OrdinalIgnoreCase);
+    }
 }
