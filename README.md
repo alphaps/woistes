@@ -37,11 +37,51 @@ dotnet run --project src/Woistes.Api
 
 The app starts at `http://localhost:5000` by default. Without a connection string it uses an in-memory database (data is lost on restart).
 
+## Authentication
+
+The app is protected by **Google OAuth** with an email allowlist — only the
+configured Google accounts can sign in. See
+[docs/aks-networking.md](docs/aks-networking.md) for the production/AKS specifics.
+
+Three settings drive it:
+
+| Setting | Purpose |
+|---------|---------|
+| `Authentication:Google:ClientId` | Google OAuth client ID |
+| `Authentication:Google:ClientSecret` | Google OAuth client secret |
+| `Authentication:AllowedEmails:Emails` (array) or `…:EmailsCsv` (comma-separated) | Permitted account emails |
+
+If the Google credentials are absent, login is disabled and `/login` shows a
+notice instead of erroring — the rest of the app still boots.
+
+**Google Cloud Console** — register an OAuth client (type *Web application*) and
+add an authorized redirect URI per environment:
+- `http://localhost:5000/signin-google` (local)
+- `http://<your-host>/signin-google` (deployed)
+
+### Local credentials
+
+- **`dotnet run`** (host) → use user-secrets (loaded only in the `Development` environment):
+  ```bash
+  cd src/Woistes.Api
+  dotnet user-secrets set "Authentication:Google:ClientId" "YOUR_ID"
+  dotnet user-secrets set "Authentication:Google:ClientSecret" "YOUR_SECRET"
+  dotnet user-secrets set "Authentication:AllowedEmails:Emails:0" "you@gmail.com"
+  ```
+- **`docker compose`** (container) → user-secrets don't reach the container, so
+  use a `.env` file (see [Docker Compose](#docker-compose) below).
+- **AKS** → passed as Helm overrides from GitHub Actions secrets
+  (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_EMAILS`).
+
 ## Docker Compose
 
 Runs the app with a real SQL Server instance. Data is persisted in a Docker volume.
 
+Copy `.env.example` to `.env` and fill in your Google OAuth credentials (the
+`.env` file is gitignored). docker-compose reads it automatically:
+
 ```bash
+cp .env.example .env   # then edit .env
 docker compose up --build
 ```
 
@@ -106,7 +146,7 @@ src/
   Woistes.Api/              # Web API + Blazor UI (single host)
 tests/
   Woistes.CtfParser.Tests/  # Parser unit tests (25 tests)
-  Woistes.Api.Tests/        # API integration tests (14 tests)
+  Woistes.Api.Tests/        # API + auth integration tests (23 tests)
 ```
 
 ## License

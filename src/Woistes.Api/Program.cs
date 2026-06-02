@@ -32,19 +32,32 @@ builder.Services.Configure<AllowedEmailsOptions>(
 
 var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
 var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+var googleConfigured = !string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret);
 
 var authBuilder = builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-}).AddCookie();
+    // Only challenge via Google when it's actually configured; otherwise fall
+    // back to the cookie scheme so a missing Google config (e.g. local dev with
+    // no credentials) doesn't throw "No DefaultChallengeScheme found".
+    options.DefaultChallengeScheme = googleConfigured
+        ? GoogleDefaults.AuthenticationScheme
+        : CookieAuthenticationDefaults.AuthenticationScheme;
+}).AddCookie(options =>
+{
+    // Where the cookie scheme sends unauthenticated users. Point at /login so
+    // protected Blazor pages land on a useful page (Google challenge or the
+    // "not configured" notice) instead of the framework default /Account/Login.
+    options.LoginPath = "/login";
+    options.LogoutPath = "/logout";
+});
 
-if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
+if (googleConfigured)
 {
     authBuilder.AddGoogle(options =>
     {
-        options.ClientId = googleClientId;
-        options.ClientSecret = googleClientSecret;
+        options.ClientId = googleClientId!;
+        options.ClientSecret = googleClientSecret!;
         // The deployment is currently served over plain HTTP (no TLS cert yet).
         // The default correlation cookie is SameSite=None+Secure, which browsers
         // refuse to store over HTTP, causing "Correlation failed" on callback.
@@ -83,10 +96,30 @@ app.UseAntiforgery();
 
 app.MapGet("/health", () => Results.Ok("healthy")).AllowAnonymous();
 
-app.MapGet("/login", () => Results.Challenge(new AuthenticationProperties
+app.MapGet("/login", () =>
 {
-    RedirectUri = "/"
-}, [GoogleDefaults.AuthenticationScheme])).AllowAnonymous();
+    if (!googleConfigured)
+    {
+        return Results.Content(
+            """
+            <!DOCTYPE html>
+            <html lang="en"><head><meta charset="utf-8"><title>Login unavailable - Woistes</title>
+            <style>body{font-family:system-ui,sans-serif;max-width:40rem;margin:4rem auto;padding:0 1rem;line-height:1.5}
+            code{background:#f0f0f0;padding:.1rem .3rem;border-radius:3px}</style></head>
+            <body><h1>Google login is not configured</h1>
+            <p>Set the Google OAuth credentials, then restart the app:</p>
+            <pre><code>dotnet user-secrets set "Authentication:Google:ClientId" "YOUR_ID"
+            dotnet user-secrets set "Authentication:Google:ClientSecret" "YOUR_SECRET"
+            dotnet user-secrets set "Authentication:AllowedEmails:Emails:0" "you@gmail.com"</code></pre>
+            </body></html>
+            """, "text/html");
+    }
+    var props = new AuthenticationProperties { RedirectUri = "/" };
+    // Force Google's account chooser instead of silently reusing the last
+    // account, so users (especially blocked ones) can pick a different account.
+    props.SetParameter("prompt", "select_account");
+    return Results.Challenge(props, [GoogleDefaults.AuthenticationScheme]);
+}).AllowAnonymous();
 
 app.MapPost("/logout", async (HttpContext ctx) =>
 {
@@ -106,6 +139,30 @@ app.MapGet("/loggedout", () => Results.Content(
     <body><h1>You've been signed out</h1><a href="/login">Sign in again</a></body>
     </html>
     """, "text/html")).AllowAnonymous();
+
+app.MapGet("/denied", (HttpContext ctx) =>
+{
+    var email = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+    var who = string.IsNullOrEmpty(email) ? "This account" : System.Net.WebUtility.HtmlEncode(email);
+    return Results.Content(
+        $$"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><meta charset="utf-8"><title>Access denied - Woistes</title>
+        <style>body{font-family:system-ui,sans-serif;display:flex;flex-direction:column;
+        align-items:center;justify-content:center;height:100vh;margin:0;background:#f5f5f5;text-align:center}
+        p{color:#555;max-width:28rem}
+        form{margin-top:1rem}
+        button{padding:.6rem 1.2rem;background:#1a73e8;color:#fff;border:none;
+        border-radius:4px;cursor:pointer;font-size:1rem}</style></head>
+        <body>
+        <h1>You're not authorized</h1>
+        <p><strong>{{who}}</strong> is not on the allowed list for this application.
+        Sign out and try a different Google account, or contact the administrator.</p>
+        <form action="/logout" method="post"><button type="submit">Sign out &amp; switch account</button></form>
+        </body></html>
+        """, "text/html");
+}).AllowAnonymous();
 
 app.MapCatalogueEndpoints();
 app.MapBrowseEndpoints();

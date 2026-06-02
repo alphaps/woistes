@@ -33,7 +33,8 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 - **CI/CD pipeline** (GitHub Actions): build, push to ACR, deploy to AKS via Helm bake, old image cleanup. OIDC auth with federated credentials (no secrets stored).
 - **Helm chart hardened for AKS**: ingressClassName for NGINX, SQL Server securityContext (runAsUser 0, fsGroup 10001) for Azure container runtime compatibility.
 - **Google OAuth authentication**: cookie-based auth with Google login, email allowlist middleware (403 for non-permitted emails). Allowed emails configured via Kubernetes secret (CSV) or appsettings (array). User-secrets for local dev. Google ClientId/ClientSecret/AllowedEmails passed as Helm overrides from GitHub Actions secrets (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_EMAILS`). 7 new auth tests.
-- **Logout**: antiforgery-protected `POST /logout` (sidebar shows signed-in email + Sign out button), redirects to an anonymous `/loggedout` confirmation page that links back to login. 2 new tests.
+- **Logout**: `POST /logout` (sidebar shows signed-in email + Sign out button), redirects to an anonymous `/loggedout` confirmation page that links back to login. Login challenge sends `prompt=select_account` so users can sign in with a different Google account.
+- **Access-denied UX**: a non-allowlisted (but Google-authenticated) user is redirected to an anonymous `/denied` page naming their account, with a "Sign out & switch account" button — instead of a bare 403 that trapped them. The allowlist middleware exempts `/denied`, `/login`, `/logout`, `/loggedout`, `/health` so blocked users can escape. 5 auth tests total for logout + denied flow.
 - **Public access via NGINX ingress on AKS**: documented in [docs/aks-networking.md](docs/aks-networking.md) — covers the LB health-probe path fix and the HTTP-only OAuth cookie workaround.
 
 ### Next

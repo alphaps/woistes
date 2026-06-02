@@ -6,6 +6,11 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Woistes=Server=sqlserver;Database=Woistes;User Id=sa;Password=Woistes_Dev_123!;TrustServerCertificate=True
+      # Google OAuth — values come from a gitignored .env file (see .env.example).
+      # User-secrets don't reach the container, so they're passed as env vars here.
+      - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID:-}
+      - Authentication__Google__ClientSecret=${GOOGLE_CLIENT_SECRET:-}
+      - Authentication__AllowedEmails__EmailsCsv=${ALLOWED_EMAILS:-}
     depends_on:
       sqlserver:
         condition: service_healthy

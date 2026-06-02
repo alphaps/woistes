@@ -44,13 +44,50 @@ public class AuthenticationTests : IClassFixture<TestWebApplicationFactory>
     }
 
     [Fact]
-    public async Task AuthenticatedRequest_WithDisallowedEmail_ReturnsForbidden()
+    public async Task AuthenticatedRequest_WithDisallowedEmail_RedirectsToDenied()
     {
         var client = _factory.CreateAuthenticatedClient("hacker@gmail.com");
 
         var response = await client.GetAsync("/api/catalogues");
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal("/denied", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
+    public async Task DisallowedEmail_CanStillReachLogout()
+    {
+        // A blocked user must be able to escape (sign out / switch account),
+        // so the allowlist check must not trap them on /logout.
+        var client = _factory.CreateAuthenticatedClient("hacker@gmail.com");
+
+        var response = await client.PostAsync("/logout", null);
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal("/loggedout", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
+    public async Task DeniedPage_IsAccessibleAnonymously()
+    {
+        var client = _factory.CreateAnonymousClient();
+
+        var response = await client.GetAsync("/denied");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Contains("not authorized", body, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task DeniedPage_NotBlockedForDisallowedUser()
+    {
+        // The denied page itself must render for a blocked user, not redirect-loop.
+        var client = _factory.CreateAuthenticatedClient("hacker@gmail.com");
+
+        var response = await client.GetAsync("/denied");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]

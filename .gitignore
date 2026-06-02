@@ -3,3 +3,6 @@ obj/
 .vs/
 *.user
 *.suo
+
+# Local secrets for docker-compose (never commit real credentials)
+.env
