@@ -17,6 +17,11 @@ sqlserver:
   password: Woistes_Prod_Change_Me!
   storage: 10Gi
 
+auth:
+  googleClientId: ""
+  googleClientSecret: ""
+  allowedEmails: []
+
 resources:
   limits:
     cpu: 500m

@@ -30,9 +30,13 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 
 - **Docker & Kubernetes**: multi-stage Dockerfile, docker-compose (app + SQL Server), Helm chart with deployment, service, StatefulSet SQL Server, secrets, and optional ingress. Auto-migration on startup.
 
+- **CI/CD pipeline** (GitHub Actions): build, push to ACR, deploy to AKS via Helm bake, old image cleanup. OIDC auth with federated credentials (no secrets stored).
+- **Helm chart hardened for AKS**: ingressClassName for NGINX, SQL Server securityContext (runAsUser 0, fsGroup 10001) for Azure container runtime compatibility.
+- **Google OAuth authentication**: cookie-based auth with Google login, email allowlist middleware (403 for non-permitted emails). Allowed emails configured via Kubernetes secret (CSV) or appsettings (array). User-secrets for local dev. 7 new auth tests.
+
 ### Next
 
-- Items from "To Do (Phase 2)" section
+- Items from "Future Phases" section
 
 ---
 

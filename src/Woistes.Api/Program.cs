@@ -1,4 +1,9 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
+using Woistes.Api;
+using Woistes.Api.Auth;
 using Woistes.Api.Components;
 using Woistes.Api.Endpoints;
 using Woistes.CtfParser;
@@ -21,6 +26,33 @@ else
 }
 
 builder.Services.AddSingleton<ICtfParser, CtfFileParser>();
+
+builder.Services.Configure<AllowedEmailsOptions>(
+    builder.Configuration.GetSection("Authentication:AllowedEmails"));
+
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
+var authBuilder = builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+}).AddCookie();
+
+if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
+{
+    authBuilder.AddGoogle(options =>
+    {
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
+    });
+}
+
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build());
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -33,10 +65,25 @@ if (!string.IsNullOrEmpty(connectionString))
     db.Database.Migrate();
 }
 
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseMiddleware<EmailAllowlistMiddleware>();
+
 app.MapStaticAssets();
 app.UseAntiforgery();
 
-app.MapGet("/health", () => Results.Ok("healthy"));
+app.MapGet("/health", () => Results.Ok("healthy")).AllowAnonymous();
+
+app.MapGet("/login", () => Results.Challenge(new AuthenticationProperties
+{
+    RedirectUri = "/"
+}, [GoogleDefaults.AuthenticationScheme])).AllowAnonymous();
+
+app.MapGet("/logout", async (HttpContext ctx) =>
+{
+    await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    return Results.Redirect("/login");
+}).AllowAnonymous();
 
 app.MapCatalogueEndpoints();
 app.MapBrowseEndpoints();

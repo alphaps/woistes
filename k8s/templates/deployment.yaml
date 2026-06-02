@@ -28,6 +28,21 @@ spec:
                 secretKeyRef:
                   name: {{ .Chart.Name }}-secrets
                   key: connection-string
+            - name: Authentication__Google__ClientId
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Chart.Name }}-secrets
+                  key: google-client-id
+            - name: Authentication__Google__ClientSecret
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Chart.Name }}-secrets
+                  key: google-client-secret
+            - name: Authentication__AllowedEmails__EmailsCsv
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Chart.Name }}-secrets
+                  key: allowed-emails
           livenessProbe:
             httpGet:
               path: /health
