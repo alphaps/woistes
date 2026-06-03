@@ -67,13 +67,53 @@ public class BrowseEndpointTests : IClassFixture<TestWebApplicationFactory>
         var rootEntries = await rootResponse.Content.ReadFromJsonAsync<List<EntryDto>>();
         var folder = rootEntries!.FirstOrDefault(e => e.IsDirectory);
 
-        if (folder != null)
+        Assert.NotNull(folder); // the sample has root folders
+
+        var childResponse = await _client.GetAsync($"/api/browse/{diskId}/children?parentId={folder.Id}");
+        Assert.Equal(HttpStatusCode.OK, childResponse.StatusCode);
+        var children = await childResponse.Content.ReadFromJsonAsync<List<EntryDto>>();
+        Assert.NotNull(children);
+    }
+
+    // Regression: nested subfolder contents must be persisted with correct
+    // ParentId so browsing into a folder returns its children. A prior bug
+    // discarded the nested tree on import, leaving every folder empty.
+    [Fact]
+    public async Task GetChildren_DeepTree_PopulatedFolderIsNotEmpty()
+    {
+        using var content = new MultipartFormDataContent();
+        var sampleCtf = TryGetSampleCtfPath();
+        if (sampleCtf == null) return;
+        using var fileStream = File.OpenRead(sampleCtf);
+        content.Add(new StreamContent(fileStream), "file", "Boumbo40.ctf");
+
+        var uploadResponse = await _client.PostAsync("/api/catalogues/upload", content);
+        var catalogue = await uploadResponse.Content.ReadFromJsonAsync<CatalogueSummaryDto>();
+        var detail = await (await _client.GetAsync($"/api/catalogues/{catalogue!.Id}"))
+            .Content.ReadFromJsonAsync<CatalogueDetailDto>();
+        var diskId = detail!.Disks[0].Id;
+
+        // Walk down from root until we find a folder that has children, proving
+        // nested entries were persisted (not just the root level).
+        var foundPopulatedFolder = await FolderWithChildrenExists(diskId, null, depth: 0);
+        Assert.True(foundPopulatedFolder, "no folder with persisted children was found");
+    }
+
+    private async Task<bool> FolderWithChildrenExists(int diskId, long? parentId, int depth)
+    {
+        if (depth > 6) return false;
+        var url = parentId is null
+            ? $"/api/browse/{diskId}/children"
+            : $"/api/browse/{diskId}/children?parentId={parentId}";
+        var entries = await (await _client.GetAsync(url)).Content.ReadFromJsonAsync<List<EntryDto>>();
+        foreach (var folder in entries!.Where(e => e.IsDirectory))
         {
-            var childResponse = await _client.GetAsync($"/api/browse/{diskId}/children?parentId={folder.Id}");
-            Assert.Equal(HttpStatusCode.OK, childResponse.StatusCode);
-            var children = await childResponse.Content.ReadFromJsonAsync<List<EntryDto>>();
-            Assert.NotNull(children);
+            var childUrl = $"/api/browse/{diskId}/children?parentId={folder.Id}";
+            var children = await (await _client.GetAsync(childUrl)).Content.ReadFromJsonAsync<List<EntryDto>>();
+            if (children!.Count > 0) return true;
+            if (await FolderWithChildrenExists(diskId, folder.Id, depth + 1)) return true;
         }
+        return false;
     }
 
     private static string? TryGetSampleCtfPath()

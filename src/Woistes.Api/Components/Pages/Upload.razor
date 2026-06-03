@@ -13,7 +13,18 @@
 
 @if (_loading)
 {
-    <p>Parsing...</p>
+    <p>@_status</p>
+    @if (_progress is { EntriesTotal: > 0 })
+    {
+        var pct = (int)(100.0 * _progress.EntriesSaved / _progress.EntriesTotal);
+        <div class="progress-bar">
+            <div class="progress-fill" style="width:@(pct)%"></div>
+        </div>
+        <p class="progress-text">
+            Disk @_progress.DisksSaved / @_progress.DisksTotal &mdash;
+            @_progress.EntriesSaved.ToString("N0") / @_progress.EntriesTotal.ToString("N0") entries (@pct%)
+        </p>
+    }
 }
 
 @if (_message != null)
@@ -25,11 +36,15 @@
     private string? _message;
     private bool _isError;
     private bool _loading;
+    private string _status = "";
+    private ImportProgress? _progress;
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
         _message = null;
+        _progress = null;
         _loading = true;
+        _status = "Parsing...";
         StateHasChanged();
         await Task.Yield();
         var file = e.File;
@@ -38,6 +53,7 @@
         {
             _message = "File too large (max 50 MB).";
             _isError = true;
+            _loading = false;
             return;
         }
 
@@ -50,7 +66,12 @@
 
             var catalogue = Parser.Parse(ms, file.Name);
             catalogue.ImportedDate = DateTime.UtcNow;
-            await Repository.AddAsync(catalogue);
+
+            _status = "Saving...";
+            // InvokeAsync marshals the progress callback onto the render thread.
+            var progress = new Progress<ImportProgress>(p =>
+                _ = InvokeAsync(() => { _progress = p; StateHasChanged(); }));
+            await Repository.AddAsync(catalogue, progress);
 
             Navigation.NavigateTo($"/browse/{catalogue.Id}");
         }

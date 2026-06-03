@@ -27,10 +27,11 @@ public class CatalogueRepository : ICatalogueRepository
             .ToListAsync(ct);
     }
 
-    public async Task<Catalogue> AddAsync(Catalogue catalogue, CancellationToken ct = default)
+    public async Task<Catalogue> AddAsync(Catalogue catalogue, IProgress<ImportProgress>? progress = null, CancellationToken ct = default)
     {
-        var entriesByDiskIndex = catalogue.Disks
-            .Select((d, i) => (Index: i, Entries: d.Entries.ToList()))
+        // Save the catalogue + disks first to obtain their generated ids.
+        var treesByDiskIndex = catalogue.Disks
+            .Select((d, i) => (Index: i, Roots: d.Entries.ToList()))
             .ToList();
         foreach (var disk in catalogue.Disks)
             disk.Entries = [];
@@ -38,19 +39,58 @@ public class CatalogueRepository : ICatalogueRepository
         _db.Catalogues.Add(catalogue);
         await _db.SaveChangesAsync(ct);
 
-        foreach (var (index, entries) in entriesByDiskIndex)
+        int entriesTotal = treesByDiskIndex.Sum(t => t.Roots.Sum(CountTree));
+        int disksTotal = treesByDiskIndex.Count;
+        int entriesSaved = 0;
+        progress?.Report(new ImportProgress(0, disksTotal, 0, entriesTotal));
+
+        // Persist one disk's tree per SaveChanges so progress advances per disk.
+        // EF tracks each tree via the self-referencing Children navigation and
+        // assigns ParentId automatically. AutoDetectChanges is disabled because
+        // its per-operation rescan is O(n^2) over tracked entities.
+        var autoDetect = _db.ChangeTracker.AutoDetectChangesEnabled;
+        _db.ChangeTracker.AutoDetectChangesEnabled = false;
+        try
         {
-            var diskId = catalogue.Disks[index].Id;
-            foreach (var entry in entries)
+            for (int i = 0; i < treesByDiskIndex.Count; i++)
             {
-                entry.DiskId = diskId;
-                entry.Children = [];
+                var (index, roots) = treesByDiskIndex[i];
+                var diskId = catalogue.Disks[index].Id;
+                int diskEntryCount = 0;
+                foreach (var root in roots)
+                {
+                    StampDiskId(root, diskId);
+                    diskEntryCount += CountTree(root);
+                }
+                _db.Entries.AddRange(roots);
+                _db.ChangeTracker.DetectChanges();
+                await _db.SaveChangesAsync(ct);
+
+                entriesSaved += diskEntryCount;
+                progress?.Report(new ImportProgress(i + 1, disksTotal, entriesSaved, entriesTotal));
             }
-            _db.Entries.AddRange(entries);
+        }
+        finally
+        {
+            _db.ChangeTracker.AutoDetectChangesEnabled = autoDetect;
         }
 
-        await _db.SaveChangesAsync(ct);
         return catalogue;
+    }
+
+    private static void StampDiskId(CatalogueEntry entry, int diskId)
+    {
+        entry.DiskId = diskId;
+        foreach (var child in entry.Children)
+            StampDiskId(child, diskId);
+    }
+
+    private static int CountTree(CatalogueEntry entry)
+    {
+        int n = 1;
+        foreach (var child in entry.Children)
+            n += CountTree(child);
+        return n;
     }
 
     public async Task DeleteAsync(int id, CancellationToken ct = default)
