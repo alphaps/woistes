@@ -16,12 +16,12 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 
 - **Domain model** (`Woistes.Domain`): `Catalogue`, `Disk`, `CatalogueEntry` entities
 - **CTF Parser** (`Woistes.CtfParser`): fully working binary parser for CTF v3.00 files
-  - Parses all 3 file entry marker types (0x001C, 0x0058, 0x000C)
-  - Handles interleaved entries and scattered directory definition blocks
-  - Builds directory tree from global file indices
+  - Parses all 5 file entry marker types (0x001C, 0x002C, 0x0058, 0x000C, 0x0048)
+  - **Pre-order tree model** (verified against the WhereIsIt GUI): each disk section is a flat file-entry run followed by a directory-record block; the tree is rebuilt via a depth stack where each folder consumes its `directFileCount` files. This replaced an earlier incorrect "global file index" model that truncated files and left populated folders empty.
+  - Three directory-record type variants (0x0C/0x18/0x2C) with distinct payload lengths (40/36/41 bytes)
   - Detects disk boundaries via filesystem type string scanning
-  - Resync logic to recover from alignment gaps
-  - **25 passing tests** covering header parsing, file entries, directory tree, sizes, full paths, and multi-disk support across all 5 sample files
+  - Resync logic to recover from alignment gaps in the file region
+  - **28 passing tests** covering header parsing, file entries, directory tree, sizes, full paths, multi-disk support, and exact GUI-verified counts for `120 Go.CTF` disk 0 (17,195 files / 1,083 folders; root 13 files + 10 folders; "New Setups" 5 files + 2 subfolders)
 - **EF Core data layer** (`Woistes.Infrastructure`): DbContext, entity configurations (with indexes on Name/FullPath/ParentId), `ICatalogueRepository` + SQL Server implementation with search (LIKE), tree browsing, and DI extension method
 - **Target framework upgrade**: all projects migrated from net8.0 to net10.0
 - **ASP.NET Core Web API** (`Woistes.Api`): minimal API with endpoints for CTF upload/import, catalogue CRUD, tree browsing (lazy-load children by disk/parent), and paginated search with glob patterns. **14 integration tests** using WebApplicationFactory + InMemory DB.
@@ -169,7 +169,7 @@ Some disks (e.g., TrueCrypt volumes) may lack a filesystem marker entirely and w
 
 ### File Entry Records
 
-Three marker types, all sharing the same prefix structure:
+Five marker types, all sharing the same prefix structure:
 
 ```
 [marker: 2 bytes LE] [name_len: 1 byte] [name: N bytes] [metadata: variable]
@@ -178,45 +178,56 @@ Three marker types, all sharing the same prefix structure:
 | Marker | Metadata size | Fields |
 |--------|--------------|--------|
 | `0x001C` | 16 bytes | modTime(2) + modDate(2) + creTime(2) + creDate(2) + accTime(2) + accDate(2) + size(4) |
+| `0x002C` | 16 bytes | same layout as `0x001C` |
 | `0x0058` | 12 bytes | modTime(2) + modDate(2) + accTime(2) + accDate(2) + size(4) |
 | `0x000C` | 17 bytes | attributes(1) + modTime(2) + modDate(2) + creTime(2) + creDate(2) + accTime(2) + accDate(2) + size(4) |
+| `0x0048` | 13 bytes | modTime(2) + modDate(2) + 5 unidentified bytes + size(4) — rare; layout not fully reverse-engineered |
 
 - All timestamps are **DOS date/time format** (same as FAT filesystem)
-- Entries of all three types are **interleaved** within a disk section (not grouped by type)
 - The attribute byte in `0x000C` entries corresponds to DOS file attributes (system, hidden, archive, etc.)
+- Within a disk section, **all file entries come first** (a single flat run, in pre-order tree order), **then** the directory-record block. Files are not interleaved with directory records.
 
-### Directory Definition Records
+### Directory Records
 
-Directory entries use a 4-byte marker prefix and describe folder structure + file assignment:
+Directory records form a contiguous block after the file entries. Three type variants exist, differing only in payload length:
 
 ```
-[02 00] [type: 1 byte (0x0C or 0x2C)] [00] [depth: 1 byte] [name_len: 2 bytes LE]
-[name: N bytes] [nulls: 4 bytes] [start_index: 4 bytes LE] [file_count: 4 bytes LE]
-[subdir_count: 4 bytes LE] [trailing_metadata: 24 bytes]
+[02 00] [type: 1 byte] [00] [depth: 1 byte] [name_len: 2 bytes LE]
+[name: N bytes] [payload]
 ```
+
+| Type byte | Payload length (after name) |
+|-----------|------------------------------|
+| `0x0C` | 40 bytes |
+| `0x18` | 36 bytes |
+| `0x2C` | 41 bytes |
+
+Payload fields (uint32 LE, from start of payload): `[nulls][f1][f2][directFileCount][...][DOS date-time + size]`.
 
 | Field | Description |
 |-------|-------------|
 | `depth` | Nesting level (1 = top-level directory, 2+ = subdirectory) |
-| `start_index` | Index into the **global cumulative file list** (across all disks) |
-| `file_count` | Number of file entries assigned to this directory |
-| `subdir_count` | Number of immediate subdirectories |
-| `0xFFFFFFFF` | Sentinel value for empty/virtual directories (no files assigned) |
+| `directFileCount` | payload offset +12: number of files directly in this folder (`0xFFFFFFFF` sentinel ⇒ 0) |
+| `f1`, `f2` | Large cumulative counters (reach ~170k for a 17k-file disk; likely byte offsets). **Not used** for tree reconstruction. |
+
+### Tree Reconstruction (the key insight)
+
+The earlier model — treating `f1`/`f2` as a "global file index / file count" — was **wrong** and produced corrupt trees. The verified model:
+
+- Files are stored in **pre-order depth-first traversal**: the disk's root files first, then folder-by-folder.
+- The directory records are also in pre-order, each carrying its `depth` and `directFileCount`.
+- Rebuild by walking the dir records with a **depth stack**; each folder consumes its next `directFileCount` files from the flat list. The leading files consumed by no folder (`totalFiles − Σ directFileCount`) are the disk's root files.
 
 ### Overall File Structure
 
 ```
 [Header]
 [Metadata section: ~100 bytes of per-catalogue counts and scan names]
-[Disk 1: header + interleaved file entries + directory definitions]
-[Disk 2: header + interleaved file entries + directory definitions]
+[Disk 1: header + [flat file-entry run] + [directory-record block]]
+[Disk 2: ...]
 ...
-[Disk N: header + entries + dirs]
+[Disk N: ...]
 ```
-
-Within each disk section, file entries and directory definition blocks are interleaved — directory sections can appear between runs of file entries.
-
-Directory `start_index` values reference the **global file list** (cumulative index across all disks), not per-disk indices.
 
 ### Known Sample Files
 

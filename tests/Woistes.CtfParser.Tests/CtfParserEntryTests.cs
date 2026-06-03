@@ -137,6 +137,51 @@ public class CtfParserEntryTests
         }
     }
 
+    // Ground truth confirmed against the WhereIsIt GUI for disk 0 ("Rack fat32"):
+    // total 17,195 files and 1,083 folders; root holds 13 files + 10 folders.
+    [Fact]
+    public void Parse_120Go_Disk0_TotalCountsMatchGui()
+    {
+        var catalogue = ParseFile("120 Go.CTF");
+        if (catalogue == null) return;
+        var disk0 = catalogue.Disks[0];
+        var all = FlattenEntries(disk0.Entries).ToList();
+
+        Assert.Equal(17195, all.Count(e => !e.IsDirectory));
+        Assert.Equal(1083, all.Count(e => e.IsDirectory));
+    }
+
+    [Fact]
+    public void Parse_120Go_Disk0_RootHas13FilesAnd10Folders()
+    {
+        var catalogue = ParseFile("120 Go.CTF");
+        if (catalogue == null) return;
+        var disk0 = catalogue.Disks[0];
+
+        Assert.Equal(13, disk0.Entries.Count(e => !e.IsDirectory));
+        Assert.Equal(10, disk0.Entries.Count(e => e.IsDirectory));
+        // A known root file and a known root folder.
+        Assert.Contains(disk0.Entries, e => !e.IsDirectory && e.Name == "Autorun.inf");
+        Assert.Contains(disk0.Entries, e => e.IsDirectory && e.Name == "New Setups");
+        // The numbered image sequence is NOT at root (it lives in a subfolder).
+        Assert.DoesNotContain(disk0.Entries, e => e.Name == "0000.jpg");
+    }
+
+    [Fact]
+    public void Parse_120Go_NewSetups_Has5FilesAnd2Subfolders()
+    {
+        var catalogue = ParseFile("120 Go.CTF");
+        if (catalogue == null) return;
+        var disk0 = catalogue.Disks[0];
+
+        var newSetups = disk0.Entries.FirstOrDefault(e => e.IsDirectory && e.Name == "New Setups");
+        Assert.NotNull(newSetups);
+        Assert.Equal(5, newSetups.Children.Count(c => !c.IsDirectory));
+        Assert.Equal(2, newSetups.Children.Count(c => c.IsDirectory));
+        Assert.Contains(newSetups.Children, c => c.IsDirectory && c.Name == "Visual Studio");
+        Assert.Contains(newSetups.Children, c => !c.IsDirectory && c.Name.StartsWith("Adobe.Premiere"));
+    }
+
     private static IEnumerable<CatalogueEntry> FlattenEntries(IEnumerable<CatalogueEntry> entries)
     {
         foreach (var entry in entries)

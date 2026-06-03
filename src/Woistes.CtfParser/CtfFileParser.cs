@@ -3,12 +3,39 @@ using Woistes.Domain;
 
 namespace Woistes.CtfParser;
 
+/// <summary>
+/// Parser for WhereIsIt "Catalog 3.xx" (.CTF) binary catalogue files.
+///
+/// Structure (reverse-engineered, verified against the WhereIsIt GUI):
+/// each disk section contains, in order:
+///   1. A flat list of FILE entries in pre-order tree order (root's files first,
+///      then folder-by-folder depth-first).
+///   2. A block of DIRECTORY records, also in pre-order, each carrying a depth
+///      and a direct-file count (f3). The tree is rebuilt by walking the dir
+///      records with a depth stack and handing each folder its next f3 files
+///      from the flat list. Files left over before the first folder are root.
+/// </summary>
 public class CtfFileParser : ICtfParser
 {
     private const string MagicPrefix = "Catalog 3.";
-    private const ushort MarkerFull = 0x001C;
-    private const ushort MarkerShort = 0x0058;
-    private const ushort MarkerAttr = 0x000C;
+
+    // File-entry markers and their metadata sizes (bytes after the name).
+    private const ushort MarkerFull = 0x001C;    // 16 bytes: mod/cre/acc DOS date-time + size
+    private const ushort MarkerShort = 0x0058;   // 12 bytes: mod/acc DOS date-time + size
+    private const ushort MarkerAttr = 0x000C;    // 17 bytes: attr byte + full date-times + size
+    private const ushort MarkerFull2 = 0x002C;   // 16 bytes: same layout as MarkerFull
+    private const ushort MarkerGid = 0x0048;     // 13 bytes
+
+    // Directory-record type byte (the 3rd byte of the 02 00 TT 00 marker) mapped
+    // to its payload length (bytes after the name). Three variants exist.
+    private static readonly Dictionary<byte, int> DirPayloadLengths = new()
+    {
+        [0x0C] = 40,
+        [0x18] = 36,
+        [0x2C] = 41,
+    };
+
+    private const uint Sentinel = 0xFFFFFFFF;
 
     public Catalogue Parse(Stream stream, string sourceFileName)
     {
@@ -27,28 +54,12 @@ public class CtfFileParser : ICtfParser
 
         var diskHeaders = FindAllDiskHeaders(data);
 
-        // Phase 1: Read all file entries and directory entries from the entire file
-        var globalFiles = new List<CatalogueEntry>();
-        var globalDirs = new List<DirRecord>();
-        var diskFileBoundaries = new List<(int startIdx, int count)>();
-
         for (int diskIdx = 0; diskIdx < header.DiskCount && diskIdx < diskHeaders.Count; diskIdx++)
         {
             var dh = diskHeaders[diskIdx];
             var sectionEnd = diskIdx + 1 < diskHeaders.Count
                 ? diskHeaders[diskIdx + 1].Offset
                 : data.Length;
-
-            var startIdx = globalFiles.Count;
-            ReadDiskEntries(data, dh.DataStart, sectionEnd, globalFiles, globalDirs);
-            diskFileBoundaries.Add((startIdx, globalFiles.Count - startIdx));
-        }
-
-        // Phase 2: Assign directories to disks and build trees
-        for (int diskIdx = 0; diskIdx < header.DiskCount && diskIdx < diskHeaders.Count; diskIdx++)
-        {
-            var dh = diskHeaders[diskIdx];
-            var (startIdx, fileCount) = diskFileBoundaries[diskIdx];
 
             var disk = new Disk
             {
@@ -57,30 +68,7 @@ public class CtfFileParser : ICtfParser
                 FilesystemType = dh.FilesystemType,
             };
 
-            // Find directories that reference this disk's files
-            var diskDirs = FindDirsForDisk(globalDirs, startIdx, startIdx + fileCount);
-
-            // Root files: those before the first directory's start index
-            int rootEnd = fileCount;
-            foreach (var dir in diskDirs)
-            {
-                if (dir.StartIndex >= startIdx && dir.StartIndex < startIdx + fileCount)
-                {
-                    var localIdx = dir.StartIndex - startIdx;
-                    if (localIdx < rootEnd)
-                        rootEnd = localIdx;
-                }
-            }
-
-            for (int i = startIdx; i < startIdx + rootEnd && i < globalFiles.Count; i++)
-            {
-                var f = globalFiles[i];
-                f.FullPath = f.Name;
-                disk.Entries.Add(f);
-            }
-
-            BuildDirectoryTree(disk, globalFiles, diskDirs);
-
+            ParseDiskSection(data, dh.DataStart, sectionEnd, disk);
             catalogue.Disks.Add(disk);
         }
 
@@ -90,37 +78,34 @@ public class CtfFileParser : ICtfParser
         return catalogue;
     }
 
-    private static void ReadDiskEntries(byte[] data, int searchStart, int sectionEnd,
-        List<CatalogueEntry> files, List<DirRecord> dirs)
+    private static void ParseDiskSection(byte[] data, int searchStart, int sectionEnd, Disk disk)
     {
-        var pos = FindFirstFileEntry(data, searchStart, sectionEnd);
+        // The directory block is the contiguous run of valid dir records near the
+        // end of the section. File entries occupy everything before it.
+        var dirBlockStart = FindDirectoryBlockStart(data, searchStart, sectionEnd);
+        var fileRegionEnd = dirBlockStart >= 0 ? dirBlockStart : sectionEnd;
+
+        var files = ReadFileEntries(data, searchStart, fileRegionEnd);
+        var dirs = dirBlockStart >= 0
+            ? ReadDirectoryRecords(data, dirBlockStart, sectionEnd)
+            : new List<DirRecord>();
+
+        BuildTree(disk, files, dirs);
+    }
+
+    // ---- File entries ------------------------------------------------------
+
+    private static List<CatalogueEntry> ReadFileEntries(byte[] data, int searchStart, int regionEnd)
+    {
+        var files = new List<CatalogueEntry>();
+        var pos = FindFirstFileEntry(data, searchStart, regionEnd);
         if (pos < 0)
-            return;
+            return files;
 
-        while (pos < sectionEnd - 3)
+        while (pos < regionEnd - 3)
         {
-            if (IsDirMarker(data, pos))
-            {
-                while (pos < sectionEnd - 4 && IsDirMarker(data, pos))
-                {
-                    pos += 4;
-                    var dir = ReadDirectoryRecord(data, ref pos);
-                    if (dir != null)
-                        dirs.Add(dir);
-                    else
-                        break;
-                }
-                // After dirs, try to find more file entries
-                var resyncPos = TryResync(data, pos, sectionEnd);
-                if (resyncPos >= 0)
-                    pos = resyncPos;
-                else
-                    break;
-                continue;
-            }
-
             var marker = PeekUInt16(data, pos);
-            if (marker == MarkerFull && IsValidNameStart(data, pos))
+            if ((marker == MarkerFull || marker == MarkerFull2) && IsValidNameStart(data, pos))
             {
                 pos += 2;
                 files.Add(ReadFileEntryFull(data, ref pos));
@@ -135,44 +120,173 @@ public class CtfFileParser : ICtfParser
                 pos += 2;
                 files.Add(ReadFileEntryAttr(data, ref pos));
             }
+            else if (marker == MarkerGid && IsValidNameStart(data, pos))
+            {
+                pos += 2;
+                files.Add(ReadFileEntryGid(data, ref pos));
+            }
             else
             {
-                var resyncPos = TryResync(data, pos + 1, sectionEnd);
-                if (resyncPos >= 0)
+                var resyncPos = TryResync(data, pos + 1, regionEnd);
+                if (resyncPos >= 0 && resyncPos < regionEnd)
                     pos = resyncPos;
                 else
                     break;
             }
         }
+
+        return files;
     }
 
-    private static List<DirRecord> FindDirsForDisk(List<DirRecord> allDirs, int diskStart, int diskEnd)
-    {
-        // Find the contiguous block of directories whose start indices fall within this disk's range
-        // Directories are in file order. We want dirs that reference files in [diskStart, diskEnd).
-        // Also include dirs with startIndex=-1 (empty/virtual) that are nested under relevant dirs.
-        var result = new List<DirRecord>();
-        bool inRange = false;
+    // ---- Directory records -------------------------------------------------
 
-        foreach (var dir in allDirs)
+    private static List<DirRecord> ReadDirectoryRecords(byte[] data, int blockStart, int sectionEnd)
+    {
+        var dirs = new List<DirRecord>();
+        var pos = blockStart;
+
+        while (pos < sectionEnd - 7)
         {
-            if (dir.StartIndex >= diskStart && dir.StartIndex < diskEnd)
+            if (TryReadDirRecord(data, pos, out var dir, out var next))
             {
-                inRange = true;
-                result.Add(dir);
+                dirs.Add(dir);
+                pos = next;
+                continue;
             }
-            else if (dir.StartIndex == -1 && inRange)
-            {
-                result.Add(dir);
-            }
-            else if (inRange && dir.StartIndex >= 0)
-            {
-                if (dir.StartIndex >= diskEnd)
-                    break;
-            }
+            pos++;
         }
 
-        return result;
+        return dirs;
+    }
+
+    /// <summary>
+    /// Reads and validates a directory record at <paramref name="pos"/>.
+    /// Layout: [02 00][type:1][00][depth:1][nameLen:2 LE][name][payload].
+    /// The payload length depends on the type byte (see <see cref="DirPayloadLengths"/>);
+    /// the direct-file count lives at payload offset +12.
+    /// </summary>
+    private static bool TryReadDirRecord(byte[] data, int pos, out DirRecord dir, out int next)
+    {
+        dir = default!;
+        next = -1;
+
+        if (pos + 7 > data.Length) return false;
+        if (data[pos] != 0x02 || data[pos + 1] != 0x00 || data[pos + 3] != 0x00) return false;
+        if (!DirPayloadLengths.TryGetValue(data[pos + 2], out int payloadLen)) return false;
+
+        int depth = data[pos + 4];
+        if (depth < 1 || depth > 30) return false;
+
+        int nameLen = data[pos + 5] | (data[pos + 6] << 8);
+        if (nameLen < 1 || nameLen > 260) return false;
+
+        int nameStart = pos + 7;
+        if (nameStart + nameLen + payloadLen > data.Length) return false;
+
+        // Name must be printable — rejects false-positive markers in file data.
+        for (int k = 0; k < nameLen; k++)
+            if (data[nameStart + k] < 0x20) return false;
+
+        var name = Encoding.Default.GetString(data, nameStart, nameLen);
+        int payload = nameStart + nameLen;
+        uint directFileCount = ReadUInt32At(data, payload + 12);
+
+        dir = new DirRecord(name, depth, directFileCount == Sentinel ? 0 : (int)directFileCount);
+        next = payload + payloadLen;
+        return true;
+    }
+
+    /// <summary>
+    /// Finds where the directory block begins: the first offset from which at
+    /// least two directory records chain consecutively. File-entry data can
+    /// coincidentally contain the marker bytes, but such false positives never
+    /// form a valid chain.
+    /// </summary>
+    private static int FindDirectoryBlockStart(byte[] data, int from, int sectionEnd)
+    {
+        for (int i = from; i < sectionEnd - 7; i++)
+        {
+            if (TryReadDirRecord(data, i, out _, out var next)
+                && next < sectionEnd
+                && TryReadDirRecord(data, next, out _, out _))
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // ---- Tree reconstruction ----------------------------------------------
+
+    /// <summary>
+    /// Rebuilds the folder tree from the flat pre-order file list and the
+    /// pre-order directory records. Walks dirs with a depth stack; each folder
+    /// consumes its next <see cref="DirRecord.DirectFileCount"/> files from the
+    /// flat list. Files not consumed by any folder (the leading run) are root.
+    /// </summary>
+    private static void BuildTree(Disk disk, List<CatalogueEntry> files, List<DirRecord> dirs)
+    {
+        // Root's direct files = those before any folder's files = total - sum(f3).
+        int consumedByDirs = dirs.Sum(d => d.DirectFileCount);
+        int rootFileCount = Math.Max(0, files.Count - consumedByDirs);
+        rootFileCount = Math.Min(rootFileCount, files.Count);
+
+        int cursor = 0;
+        for (int i = 0; i < rootFileCount; i++)
+        {
+            var f = files[cursor++];
+            f.FullPath = f.Name;
+            disk.Entries.Add(f);
+        }
+
+        // depth -> the folder entry currently open at that depth.
+        var stack = new Stack<(CatalogueEntry Entry, int Depth)>();
+
+        foreach (var dir in dirs)
+        {
+            var dirEntry = new CatalogueEntry { Name = dir.Name, IsDirectory = true };
+
+            while (stack.Count > 0 && stack.Peek().Depth >= dir.Depth)
+                stack.Pop();
+
+            if (stack.Count > 0)
+            {
+                dirEntry.FullPath = $"{stack.Peek().Entry.FullPath}/{dir.Name}";
+                stack.Peek().Entry.Children.Add(dirEntry);
+            }
+            else
+            {
+                dirEntry.FullPath = dir.Name;
+                disk.Entries.Add(dirEntry);
+            }
+
+            int take = Math.Min(dir.DirectFileCount, files.Count - cursor);
+            for (int i = 0; i < take; i++)
+            {
+                var f = files[cursor++];
+                f.FullPath = $"{dirEntry.FullPath}/{f.Name}";
+                dirEntry.Children.Add(f);
+            }
+
+            stack.Push((dirEntry, dir.Depth));
+        }
+    }
+
+    // ---- Low-level file-entry readers -------------------------------------
+
+    private static int FindFirstFileEntry(byte[] data, int searchStart, int searchEnd)
+    {
+        var limit = Math.Min(searchStart + 500, searchEnd - 3);
+        for (int i = searchStart; i < limit; i++)
+        {
+            if (!IsFileMarker(data, i)) continue;
+
+            var nextPos = SkipOneEntry(data, i);
+            if (nextPos < 0 || nextPos >= searchEnd - 3) continue;
+            if (IsFileMarker(data, nextPos))
+                return i;
+        }
+        return -1;
     }
 
     private static int TryResync(byte[] data, int from, int limit)
@@ -180,80 +294,12 @@ public class CtfFileParser : ICtfParser
         var searchEnd = Math.Min(from + 256, limit - 3);
         for (int i = from; i < searchEnd; i++)
         {
-            if (IsDirMarker(data, i))
-                return i;
-            var marker = PeekUInt16(data, i);
-            if ((marker == MarkerFull || marker == MarkerShort || marker == MarkerAttr)
-                && IsValidNameStart(data, i))
+            if (IsFileMarker(data, i))
             {
                 var nextPos = SkipOneEntry(data, i);
-                if (nextPos > 0 && nextPos < limit - 3)
-                {
-                    if (IsFileMarker(data, nextPos) || IsDirMarker(data, nextPos))
-                        return i;
-                }
+                if (nextPos > 0 && nextPos < limit - 3 && IsFileMarker(data, nextPos))
+                    return i;
             }
-        }
-        return -1;
-    }
-
-    private static void BuildDirectoryTree(Disk disk, List<CatalogueEntry> globalFiles, List<DirRecord> directories)
-    {
-        if (directories.Count == 0)
-            return;
-
-        var dirStack = new Stack<(CatalogueEntry Entry, int Depth)>();
-
-        foreach (var dir in directories)
-        {
-            var dirEntry = new CatalogueEntry
-            {
-                Name = dir.Name,
-                IsDirectory = true,
-            };
-
-            while (dirStack.Count > 0 && dirStack.Peek().Depth >= dir.Depth)
-                dirStack.Pop();
-
-            if (dirStack.Count > 0)
-                dirEntry.FullPath = $"{dirStack.Peek().Entry.FullPath}/{dir.Name}";
-            else
-                dirEntry.FullPath = dir.Name;
-
-            if (dir.StartIndex >= 0 && dir.FileCount > 0 && dir.StartIndex < globalFiles.Count)
-            {
-                var end = Math.Min(dir.StartIndex + dir.FileCount, globalFiles.Count);
-                for (int i = dir.StartIndex; i < end; i++)
-                {
-                    var file = globalFiles[i];
-                    file.FullPath = $"{dirEntry.FullPath}/{file.Name}";
-                    dirEntry.Children.Add(file);
-                }
-            }
-
-            if (dirStack.Count > 0)
-                dirStack.Peek().Entry.Children.Add(dirEntry);
-            else
-                disk.Entries.Add(dirEntry);
-
-            dirStack.Push((dirEntry, dir.Depth));
-        }
-    }
-
-    private static int FindFirstFileEntry(byte[] data, int searchStart, int searchEnd)
-    {
-        var limit = Math.Min(searchStart + 500, searchEnd - 3);
-        for (int i = searchStart; i < limit; i++)
-        {
-            if (!IsValidNameStart(data, i)) continue;
-            var marker = PeekUInt16(data, i);
-            if (marker != MarkerFull && marker != MarkerShort && marker != MarkerAttr)
-                continue;
-
-            var nextPos = SkipOneEntry(data, i);
-            if (nextPos < 0 || nextPos >= searchEnd - 3) continue;
-            if (IsFileMarker(data, nextPos) || IsDirMarker(data, nextPos))
-                return i;
         }
         return -1;
     }
@@ -263,23 +309,25 @@ public class CtfFileParser : ICtfParser
         if (pos + 3 >= data.Length) return -1;
         var marker = PeekUInt16(data, pos);
         var nameLen = data[pos + 2];
-        int metaSize = marker switch
-        {
-            MarkerFull => 16,
-            MarkerShort => 12,
-            MarkerAttr => 17,
-            _ => -1,
-        };
+        int metaSize = MetaSize(marker);
         if (metaSize < 0) return -1;
         return pos + 3 + nameLen + metaSize;
     }
 
+    private static int MetaSize(ushort marker) => marker switch
+    {
+        MarkerFull => 16,
+        MarkerFull2 => 16,
+        MarkerShort => 12,
+        MarkerAttr => 17,
+        MarkerGid => 13,
+        _ => -1,
+    };
+
     private static bool IsFileMarker(byte[] data, int pos)
     {
         if (pos + 3 >= data.Length) return false;
-        var marker = PeekUInt16(data, pos);
-        return (marker == MarkerFull || marker == MarkerShort || marker == MarkerAttr)
-            && IsValidNameStart(data, pos);
+        return MetaSize(PeekUInt16(data, pos)) >= 0 && IsValidNameStart(data, pos);
     }
 
     private static bool IsValidNameStart(byte[] data, int pos)
@@ -288,14 +336,6 @@ public class CtfFileParser : ICtfParser
             && data[pos + 2] >= 1
             && data[pos + 2] <= 250
             && data[pos + 3] >= 0x20;
-    }
-
-    private static bool IsDirMarker(byte[] data, int pos)
-    {
-        if (pos + 4 >= data.Length) return false;
-        return data[pos] == 0x02 && data[pos + 1] == 0x00
-            && (data[pos + 2] == 0x0C || data[pos + 2] == 0x2C)
-            && data[pos + 3] == 0x00;
     }
 
     private static CatalogueEntry ReadFileEntryFull(byte[] data, ref int pos)
@@ -349,7 +389,7 @@ public class CtfFileParser : ICtfParser
         var name = Encoding.Default.GetString(data, pos, nameLen);
         pos += nameLen;
 
-        pos++;
+        pos++; // attribute byte
         var modTime = ReadUInt16(data, ref pos);
         var modDate = ReadUInt16(data, ref pos);
         var creTime = ReadUInt16(data, ref pos);
@@ -368,38 +408,30 @@ public class CtfFileParser : ICtfParser
         };
     }
 
-    private static DirRecord? ReadDirectoryRecord(byte[] data, ref int pos)
+    // Rare 13-byte metadata variant. Layout isn't fully reverse-engineered; we
+    // read the leading DOS date-time and the trailing 4-byte size, which are the
+    // fields the UI needs. Creation date is left unknown.
+    private static CatalogueEntry ReadFileEntryGid(byte[] data, ref int pos)
     {
-        if (pos >= data.Length) return null;
-
-        var depth = data[pos++];
-        if (depth < 1 || depth > 30) return null;
-
-        if (pos + 2 > data.Length) return null;
-        var nameLen = ReadUInt16(data, ref pos);
-        if (nameLen == 0 || nameLen > 260 || pos + nameLen > data.Length) return null;
-
+        var nameLen = data[pos++];
         var name = Encoding.Default.GetString(data, pos, nameLen);
         pos += nameLen;
 
-        if (pos + 4 > data.Length) return null;
-        pos += 4;
+        var modTime = ReadUInt16(data, ref pos);
+        var modDate = ReadUInt16(data, ref pos);
+        pos += 5; // unidentified bytes
+        var size = ReadUInt32(data, ref pos);
 
-        if (pos + 12 > data.Length) return null;
-        var startIndex = (int)ReadUInt32(data, ref pos);
-        var fileCount = (int)ReadUInt32(data, ref pos);
-        var subdirCount = (int)ReadUInt32(data, ref pos);
-
-        if (pos + 24 > data.Length) return null;
-        pos += 24;
-
-        if (startIndex == unchecked((int)0xFFFFFFFF))
-            startIndex = -1;
-        if (fileCount == unchecked((int)0xFFFFFFFF))
-            fileCount = 0;
-
-        return new DirRecord(name, depth, startIndex, fileCount, subdirCount);
+        return new CatalogueEntry
+        {
+            Name = name,
+            IsDirectory = false,
+            Size = size,
+            ModifiedDate = DosDateTimeToDateTime(modDate, modTime),
+        };
     }
+
+    // ---- Header & disk-header scanning ------------------------------------
 
     private static CatalogueHeader ReadHeader(byte[] data, ref int pos)
     {
@@ -450,10 +482,10 @@ public class CtfFileParser : ICtfParser
         return results;
     }
 
+    // ---- Byte helpers ------------------------------------------------------
+
     private static ushort PeekUInt16(byte[] data, int pos)
-    {
-        return (ushort)(data[pos] | (data[pos + 1] << 8));
-    }
+        => (ushort)(data[pos] | (data[pos + 1] << 8));
 
     private static ushort ReadUInt16(byte[] data, ref int pos)
     {
@@ -464,10 +496,13 @@ public class CtfFileParser : ICtfParser
 
     private static uint ReadUInt32(byte[] data, ref int pos)
     {
-        var val = (uint)(data[pos] | (data[pos + 1] << 8) | (data[pos + 2] << 16) | (data[pos + 3] << 24));
+        var val = ReadUInt32At(data, pos);
         pos += 4;
         return val;
     }
+
+    private static uint ReadUInt32At(byte[] data, int pos)
+        => (uint)(data[pos] | (data[pos + 1] << 8) | (data[pos + 2] << 16) | (data[pos + 3] << 24));
 
     private static DateTime? DosDateTimeToDateTime(ushort date, ushort time)
     {
@@ -499,5 +534,5 @@ public class CtfFileParser : ICtfParser
 
     private record CatalogueHeader(string Name, ushort DiskCount, ushort[] DiskIds);
     private record DiskHeaderInfo(int Offset, string FilesystemType, string VolumeLabel, int DataStart);
-    private record DirRecord(string Name, int Depth, int StartIndex, int FileCount, int SubdirCount);
+    private record DirRecord(string Name, int Depth, int DirectFileCount);
 }
