@@ -1,0 +1,1602 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<coverage line-rate="0.9695999999999999" branch-rate="0.9325" version="1.9" timestamp="1780516763" lines-covered="383" lines-valid="395" branches-covered="166" branches-valid="178">
+  <sources>
+    <source>C:\Users\alpha\Documents\ws\woistes\git\src\</source>
+  </sources>
+  <packages>
+    <package name="Woistes.CtfParser" line-rate="0.9972" branch-rate="0.9325" complexity="190">
+      <classes>
+        <class name="Woistes.CtfParser.CtfFileParser" filename="Woistes.CtfParser\CtfFileParser.cs" line-rate="0.9971" branch-rate="0.9309999999999999" complexity="183">
+          <methods>
+            <method name="Parse" signature="(System.IO.Stream,System.String)" line-rate="1" branch-rate="1" complexity="6">
+              <lines>
+                <line number="41" hits="28" branch="False" />
+                <line number="42" hits="28" branch="False" />
+                <line number="43" hits="28" branch="False" />
+                <line number="45" hits="28" branch="False" />
+                <line number="46" hits="28" branch="False" />
+                <line number="48" hits="28" branch="False" />
+                <line number="49" hits="28" branch="False" />
+                <line number="50" hits="28" branch="False" />
+                <line number="51" hits="28" branch="False" />
+                <line number="52" hits="28" branch="False" />
+                <line number="53" hits="28" branch="False" />
+                <line number="55" hits="28" branch="False" />
+                <line number="57" hits="1030" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="252" type="jump" coverage="100%" />
+                    <condition number="232" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="58" hits="487" branch="False" />
+                <line number="59" hits="487" branch="False" />
+                <line number="60" hits="487" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="116" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="61" hits="487" branch="False" />
+                <line number="62" hits="487" branch="False" />
+                <line number="64" hits="487" branch="False" />
+                <line number="65" hits="487" branch="False" />
+                <line number="66" hits="487" branch="False" />
+                <line number="67" hits="487" branch="False" />
+                <line number="68" hits="487" branch="False" />
+                <line number="69" hits="487" branch="False" />
+                <line number="71" hits="487" branch="False" />
+                <line number="72" hits="487" branch="False" />
+                <line number="73" hits="487" branch="False" />
+                <line number="75" hits="1619701" branch="False" />
+                <line number="76" hits="1619701" branch="False" />
+                <line number="78" hits="28" branch="False" />
+                <line number="79" hits="28" branch="False" />
+              </lines>
+            </method>
+            <method name="ParseDiskSection" signature="(System.Byte[],System.Int32,System.Int32,Woistes.Domain.Disk)" line-rate="1" branch-rate="1" complexity="4">
+              <lines>
+                <line number="82" hits="487" branch="False" />
+                <line number="85" hits="487" branch="False" />
+                <line number="86" hits="487" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="12" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="88" hits="487" branch="False" />
+                <line number="89" hits="487" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="30" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="90" hits="487" branch="False" />
+                <line number="91" hits="487" branch="False" />
+                <line number="93" hits="487" branch="False" />
+                <line number="94" hits="487" branch="False" />
+              </lines>
+            </method>
+            <method name="ReadFileEntries" signature="(System.Byte[],System.Int32,System.Int32)" line-rate="1" branch-rate="1" complexity="26">
+              <lines>
+                <line number="99" hits="487" branch="False" />
+                <line number="100" hits="487" branch="False" />
+                <line number="101" hits="487" branch="False" />
+                <line number="102" hits="487" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="22" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="103" hits="355" branch="False" />
+                <line number="105" hits="1454633" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="289" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="106" hits="1454517" branch="False" />
+                <line number="107" hits="1454517" branch="False" />
+                <line number="108" hits="1454517" branch="True" condition-coverage="100% (6/6)">
+                  <conditions>
+                    <condition number="50" type="jump" coverage="100%" />
+                    <condition number="56" type="jump" coverage="100%" />
+                    <condition number="72" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="109" hits="1051007" branch="False" />
+                <line number="110" hits="1051007" branch="False" />
+                <line number="111" hits="1051007" branch="False" />
+                <line number="112" hits="1051007" branch="False" />
+                <line number="113" hits="403510" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="104" type="jump" coverage="100%" />
+                    <condition number="120" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="114" hits="363866" branch="False" />
+                <line number="115" hits="363866" branch="False" />
+                <line number="116" hits="363866" branch="False" />
+                <line number="117" hits="363866" branch="False" />
+                <line number="118" hits="39644" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="152" type="jump" coverage="100%" />
+                    <condition number="168" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="119" hits="30761" branch="False" />
+                <line number="120" hits="30761" branch="False" />
+                <line number="121" hits="30761" branch="False" />
+                <line number="122" hits="30761" branch="False" />
+                <line number="123" hits="8883" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="197" type="jump" coverage="100%" />
+                    <condition number="213" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="124" hits="8745" branch="False" />
+                <line number="125" hits="8745" branch="False" />
+                <line number="126" hits="8745" branch="False" />
+                <line number="127" hits="8745" branch="False" />
+                <line number="129" hits="138" branch="False" />
+                <line number="130" hits="138" branch="False" />
+                <line number="131" hits="138" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="254" type="jump" coverage="100%" />
+                    <condition number="268" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="132" hits="122" branch="False" />
+                <line number="134" hits="16" branch="False" />
+                <line number="135" hits="122" branch="False" />
+                <line number="136" hits="1454501" branch="False" />
+                <line number="138" hits="132" branch="False" />
+                <line number="139" hits="487" branch="False" />
+              </lines>
+            </method>
+            <method name="ReadDirectoryRecords" signature="(System.Byte[],System.Int32,System.Int32)" line-rate="1" branch-rate="1" complexity="4">
+              <lines>
+                <line number="144" hits="132" branch="False" />
+                <line number="145" hits="132" branch="False" />
+                <line number="146" hits="132" branch="False" />
+                <line number="148" hits="38608579" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="57" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="149" hits="38608447" branch="False" />
+                <line number="150" hits="38608447" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="27" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="151" hits="164807" branch="False" />
+                <line number="152" hits="164807" branch="False" />
+                <line number="153" hits="164807" branch="False" />
+                <line number="154" hits="164807" branch="False" />
+                <line number="156" hits="38443640" branch="False" />
+                <line number="157" hits="38443640" branch="False" />
+                <line number="159" hits="132" branch="False" />
+                <line number="160" hits="132" branch="False" />
+              </lines>
+            </method>
+            <method name="TryReadDirRecord" signature="(System.Byte[],System.Int32,Woistes.CtfParser.CtfFileParser/DirRecord&amp;,System.Int32&amp;)" line-rate="1" branch-rate="0.8076000000000001" complexity="26">
+              <lines>
+                <line number="169" hits="169503898" branch="False" />
+                <line number="170" hits="169503898" branch="False" />
+                <line number="171" hits="169503898" branch="False" />
+                <line number="173" hits="169503898" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="19" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="174" hits="338695524" branch="True" condition-coverage="100% (6/6)">
+                  <conditions>
+                    <condition number="33" type="jump" coverage="100%" />
+                    <condition number="40" type="jump" coverage="100%" />
+                    <condition number="57" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="175" hits="458550" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="91" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="177" hits="165994" branch="False" />
+                <line number="178" hits="166236" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="109" type="jump" coverage="100%" />
+                    <condition number="123" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="180" hits="165752" branch="False" />
+                <line number="181" hits="166425" branch="True" condition-coverage="75% (3/4)">
+                  <conditions>
+                    <condition number="149" type="jump" coverage="50%" />
+                    <condition number="166" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="183" hits="165079" branch="False" />
+                <line number="184" hits="165079" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="194" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="187" hits="4421350" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="242" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="188" hits="2045596" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="220" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="190" hits="165079" branch="False" />
+                <line number="191" hits="165079" branch="False" />
+                <line number="192" hits="165079" branch="False" />
+                <line number="194" hits="165079" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="284" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="195" hits="165079" branch="False" />
+                <line number="196" hits="165079" branch="False" />
+                <line number="197" hits="169503898" branch="False" />
+              </lines>
+            </method>
+            <method name="FindDirectoryBlockStart" signature="(System.Byte[],System.Int32,System.Int32)" line-rate="1" branch-rate="1" complexity="8">
+              <lines>
+                <line number="206" hits="487" branch="False" />
+                <line number="207" hits="261791332" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="62" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="208" hits="130895311" branch="False" />
+                <line number="209" hits="130895311" branch="True" condition-coverage="100% (6/6)">
+                  <conditions>
+                    <condition number="17" type="jump" coverage="100%" />
+                    <condition number="21" type="jump" coverage="100%" />
+                    <condition number="39" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="210" hits="130895311" branch="False" />
+                <line number="211" hits="130895311" branch="False" />
+                <line number="212" hits="132" branch="False" />
+                <line number="213" hits="132" branch="False" />
+                <line number="215" hits="130895179" branch="False" />
+                <line number="216" hits="355" branch="False" />
+                <line number="217" hits="487" branch="False" />
+              </lines>
+            </method>
+            <method name="BuildTree" signature="(Woistes.Domain.Disk,System.Collections.Generic.List`1&lt;Woistes.Domain.CatalogueEntry&gt;,System.Collections.Generic.List`1&lt;Woistes.CtfParser.CtfFileParser/DirRecord&gt;)" line-rate="1" branch-rate="1" complexity="12">
+              <lines>
+                <line number="228" hits="487" branch="False" />
+                <line number="230" hits="165294" branch="False" />
+                <line number="231" hits="487" branch="False" />
+                <line number="232" hits="487" branch="False" />
+                <line number="234" hits="487" branch="False" />
+                <line number="235" hits="25104" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="133" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="236" hits="12065" branch="False" />
+                <line number="237" hits="12065" branch="False" />
+                <line number="238" hits="12065" branch="False" />
+                <line number="239" hits="12065" branch="False" />
+                <line number="240" hits="12065" branch="False" />
+                <line number="243" hits="487" branch="False" />
+                <line number="245" hits="331075" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="495" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="246" hits="164807" branch="False" />
+                <line number="247" hits="164807" branch="False" />
+                <line number="249" hits="329335" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="242" type="jump" coverage="100%" />
+                    <condition number="210" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="250" hits="164528" branch="False" />
+                <line number="252" hits="164807" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="257" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="253" hits="163915" branch="False" />
+                <line number="254" hits="163915" branch="False" />
+                <line number="255" hits="163915" branch="False" />
+                <line number="256" hits="163915" branch="False" />
+                <line number="258" hits="892" branch="False" />
+                <line number="259" hits="892" branch="False" />
+                <line number="260" hits="892" branch="False" />
+                <line number="261" hits="892" branch="False" />
+                <line number="263" hits="164807" branch="False" />
+                <line number="264" hits="3214242" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="464" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="265" hits="1442314" branch="False" />
+                <line number="266" hits="1442314" branch="False" />
+                <line number="267" hits="1442314" branch="False" />
+                <line number="268" hits="1442314" branch="False" />
+                <line number="269" hits="1442314" branch="False" />
+                <line number="271" hits="164807" branch="False" />
+                <line number="272" hits="164807" branch="False" />
+                <line number="273" hits="487" branch="False" />
+              </lines>
+            </method>
+            <method name="FindFirstFileEntry" signature="(System.Byte[],System.Int32,System.Int32)" line-rate="1" branch-rate="0.9" complexity="10">
+              <lines>
+                <line number="278" hits="487" branch="False" />
+                <line number="279" hits="487" branch="False" />
+                <line number="280" hits="364310" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="101" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="281" hits="181800" branch="False" />
+                <line number="282" hits="363419" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="34" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="284" hits="181" branch="False" />
+                <line number="285" hits="183" branch="True" condition-coverage="75% (3/4)">
+                  <conditions>
+                    <condition number="48" type="jump" coverage="50%" />
+                    <condition number="66" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="286" hits="179" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="81" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="287" hits="132" branch="False" />
+                <line number="288" hits="47" branch="False" />
+                <line number="289" hits="355" branch="False" />
+                <line number="290" hits="487" branch="False" />
+              </lines>
+            </method>
+            <method name="TryResync" signature="(System.Byte[],System.Int32,System.Int32)" line-rate="1" branch-rate="0.8" complexity="10">
+              <lines>
+                <line number="293" hits="138" branch="False" />
+                <line number="294" hits="138" branch="False" />
+                <line number="295" hits="20404" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="87" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="296" hits="10186" branch="False" />
+                <line number="297" hits="10186" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="31" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="298" hits="151" branch="False" />
+                <line number="299" hits="151" branch="False" />
+                <line number="300" hits="151" branch="True" condition-coverage="66.66% (4/6)">
+                  <conditions>
+                    <condition number="44" type="jump" coverage="50%" />
+                    <condition number="50" type="jump" coverage="50%" />
+                    <condition number="66" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="301" hits="122" branch="False" />
+                <line number="302" hits="29" branch="False" />
+                <line number="303" hits="10064" branch="False" />
+                <line number="304" hits="16" branch="False" />
+                <line number="305" hits="138" branch="False" />
+              </lines>
+            </method>
+            <method name="SkipOneEntry" signature="(System.Byte[],System.Int32)" line-rate="1" branch-rate="0.5" complexity="4">
+              <lines>
+                <line number="308" hits="332" branch="False" />
+                <line number="309" hits="332" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="14" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="310" hits="332" branch="False" />
+                <line number="311" hits="332" branch="False" />
+                <line number="312" hits="332" branch="False" />
+                <line number="313" hits="332" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="50" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="314" hits="332" branch="False" />
+                <line number="315" hits="332" branch="False" />
+              </lines>
+            </method>
+            <method name="MetaSize" signature="(System.UInt16)" line-rate="1" branch-rate="1" complexity="12">
+              <lines>
+                <line number="317" hits="192648" branch="True" condition-coverage="100% (12/12)">
+                  <conditions>
+                    <condition number="7" type="jump" coverage="100%" />
+                    <condition number="12" type="jump" coverage="100%" />
+                    <condition number="26" type="jump" coverage="100%" />
+                    <condition number="33" type="jump" coverage="100%" />
+                    <condition number="19" type="jump" coverage="100%" />
+                    <condition number="40" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="318" hits="192648" branch="False" />
+                <line number="319" hits="541" branch="False" />
+                <line number="320" hits="128" branch="False" />
+                <line number="321" hits="155" branch="False" />
+                <line number="322" hits="178" branch="False" />
+                <line number="323" hits="63" branch="False" />
+                <line number="324" hits="191583" branch="False" />
+                <line number="325" hits="192648" branch="False" />
+              </lines>
+            </method>
+            <method name="IsFileMarker" signature="(System.Byte[],System.Int32)" line-rate="1" branch-rate="0.75" complexity="4">
+              <lines>
+                <line number="328" hits="192316" branch="False" />
+                <line number="329" hits="192316" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="14" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="330" hits="192316" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="33" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="331" hits="192316" branch="False" />
+              </lines>
+            </method>
+            <method name="IsValidNameStart" signature="(System.Byte[],System.Int32)" line-rate="1" branch-rate="1" complexity="6">
+              <lines>
+                <line number="334" hits="1455112" branch="False" />
+                <line number="335" hits="1455112" branch="True" condition-coverage="100% (6/6)">
+                  <conditions>
+                    <condition number="7" type="jump" coverage="100%" />
+                    <condition number="15" type="jump" coverage="100%" />
+                    <condition number="27" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="336" hits="1455112" branch="False" />
+                <line number="337" hits="1455112" branch="False" />
+                <line number="338" hits="1455112" branch="False" />
+                <line number="339" hits="1455112" branch="False" />
+              </lines>
+            </method>
+            <method name="ReadFileEntryFull" signature="(System.Byte[],System.Int32&amp;)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="342" hits="1051007" branch="False" />
+                <line number="343" hits="1051007" branch="False" />
+                <line number="344" hits="1051007" branch="False" />
+                <line number="345" hits="1051007" branch="False" />
+                <line number="347" hits="1051007" branch="False" />
+                <line number="348" hits="1051007" branch="False" />
+                <line number="349" hits="1051007" branch="False" />
+                <line number="350" hits="1051007" branch="False" />
+                <line number="351" hits="1051007" branch="False" />
+                <line number="352" hits="1051007" branch="False" />
+                <line number="353" hits="1051007" branch="False" />
+                <line number="355" hits="1051007" branch="False" />
+                <line number="356" hits="1051007" branch="False" />
+                <line number="357" hits="1051007" branch="False" />
+                <line number="358" hits="1051007" branch="False" />
+                <line number="359" hits="1051007" branch="False" />
+                <line number="360" hits="1051007" branch="False" />
+                <line number="361" hits="1051007" branch="False" />
+                <line number="362" hits="1051007" branch="False" />
+                <line number="363" hits="1051007" branch="False" />
+              </lines>
+            </method>
+            <method name="ReadFileEntryShort" signature="(System.Byte[],System.Int32&amp;)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="366" hits="363866" branch="False" />
+                <line number="367" hits="363866" branch="False" />
+                <line number="368" hits="363866" branch="False" />
+                <line number="369" hits="363866" branch="False" />
+                <line number="371" hits="363866" branch="False" />
+                <line number="372" hits="363866" branch="False" />
+                <line number="373" hits="363866" branch="False" />
+                <line number="374" hits="363866" branch="False" />
+                <line number="375" hits="363866" branch="False" />
+                <line number="377" hits="363866" branch="False" />
+                <line number="378" hits="363866" branch="False" />
+                <line number="379" hits="363866" branch="False" />
+                <line number="380" hits="363866" branch="False" />
+                <line number="381" hits="363866" branch="False" />
+                <line number="382" hits="363866" branch="False" />
+                <line number="383" hits="363866" branch="False" />
+                <line number="384" hits="363866" branch="False" />
+              </lines>
+            </method>
+            <method name="ReadFileEntryAttr" signature="(System.Byte[],System.Int32&amp;)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="387" hits="30761" branch="False" />
+                <line number="388" hits="30761" branch="False" />
+                <line number="389" hits="30761" branch="False" />
+                <line number="390" hits="30761" branch="False" />
+                <line number="392" hits="30761" branch="False" />
+                <line number="393" hits="30761" branch="False" />
+                <line number="394" hits="30761" branch="False" />
+                <line number="395" hits="30761" branch="False" />
+                <line number="396" hits="30761" branch="False" />
+                <line number="397" hits="30761" branch="False" />
+                <line number="398" hits="30761" branch="False" />
+                <line number="399" hits="30761" branch="False" />
+                <line number="401" hits="30761" branch="False" />
+                <line number="402" hits="30761" branch="False" />
+                <line number="403" hits="30761" branch="False" />
+                <line number="404" hits="30761" branch="False" />
+                <line number="405" hits="30761" branch="False" />
+                <line number="406" hits="30761" branch="False" />
+                <line number="407" hits="30761" branch="False" />
+                <line number="408" hits="30761" branch="False" />
+                <line number="409" hits="30761" branch="False" />
+              </lines>
+            </method>
+            <method name="ReadFileEntryGid" signature="(System.Byte[],System.Int32&amp;)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="415" hits="8745" branch="False" />
+                <line number="416" hits="8745" branch="False" />
+                <line number="417" hits="8745" branch="False" />
+                <line number="418" hits="8745" branch="False" />
+                <line number="420" hits="8745" branch="False" />
+                <line number="421" hits="8745" branch="False" />
+                <line number="422" hits="8745" branch="False" />
+                <line number="423" hits="8745" branch="False" />
+                <line number="425" hits="8745" branch="False" />
+                <line number="426" hits="8745" branch="False" />
+                <line number="427" hits="8745" branch="False" />
+                <line number="428" hits="8745" branch="False" />
+                <line number="429" hits="8745" branch="False" />
+                <line number="430" hits="8745" branch="False" />
+                <line number="431" hits="8745" branch="False" />
+                <line number="432" hits="8745" branch="False" />
+              </lines>
+            </method>
+            <method name="ReadHeader" signature="(System.Byte[],System.Int32&amp;)" line-rate="0.9333" branch-rate="0.75" complexity="4">
+              <lines>
+                <line number="437" hits="28" branch="False" />
+                <line number="438" hits="28" branch="False" />
+                <line number="439" hits="28" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="40" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="440" hits="0" branch="False" />
+                <line number="441" hits="28" branch="False" />
+                <line number="442" hits="28" branch="False" />
+                <line number="444" hits="28" branch="False" />
+                <line number="445" hits="28" branch="False" />
+                <line number="446" hits="1038" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="120" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="447" hits="491" branch="False" />
+                <line number="449" hits="28" branch="False" />
+                <line number="450" hits="28" branch="False" />
+                <line number="451" hits="28" branch="False" />
+                <line number="453" hits="28" branch="False" />
+                <line number="454" hits="28" branch="False" />
+              </lines>
+            </method>
+            <method name="FindAllDiskHeaders" signature="(System.Byte[])" line-rate="1" branch-rate="1" complexity="20">
+              <lines>
+                <line number="457" hits="28" branch="False" />
+                <line number="458" hits="28" branch="False" />
+                <line number="459" hits="28" branch="False" />
+                <line number="461" hits="357700438" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="354" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="462" hits="178850191" branch="False" />
+                <line number="463" hits="2147483647" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="331" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="464" hits="1073101146" branch="False" />
+                <line number="465" hits="1073101146" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="108" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="466" hits="2142656676" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="134" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="467" hits="3545616" branch="False" />
+                <line number="468" hits="7090743" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="177" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="470" hits="489" branch="False" />
+                <line number="471" hits="10536" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="289" type="jump" coverage="100%" />
+                    <condition number="270" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="472" hits="5254" branch="False" />
+                <line number="473" hits="5254" branch="True" condition-coverage="100% (6/6)">
+                  <conditions>
+                    <condition number="207" type="jump" coverage="100%" />
+                    <condition number="214" type="jump" coverage="100%" />
+                    <condition number="231" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="474" hits="475" branch="False" />
+                <line number="475" hits="475" branch="False" />
+                <line number="476" hits="475" branch="False" />
+                <line number="478" hits="4779" branch="False" />
+                <line number="479" hits="489" branch="False" />
+                <line number="480" hits="489" branch="False" />
+                <line number="481" hits="178850191" branch="False" />
+                <line number="482" hits="28" branch="False" />
+                <line number="483" hits="28" branch="False" />
+              </lines>
+            </method>
+            <method name="PeekUInt16" signature="(System.Byte[],System.Int32)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="488" hits="1647165" branch="False" />
+              </lines>
+            </method>
+            <method name="ReadUInt16" signature="(System.Byte[],System.Int32&amp;)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="491" hits="7964109" branch="False" />
+                <line number="492" hits="7964109" branch="False" />
+                <line number="493" hits="7964109" branch="False" />
+                <line number="494" hits="7964109" branch="False" />
+                <line number="495" hits="7964109" branch="False" />
+              </lines>
+            </method>
+            <method name="ReadUInt32" signature="(System.Byte[],System.Int32&amp;)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="498" hits="1454379" branch="False" />
+                <line number="499" hits="1454379" branch="False" />
+                <line number="500" hits="1454379" branch="False" />
+                <line number="501" hits="1454379" branch="False" />
+                <line number="502" hits="1454379" branch="False" />
+              </lines>
+            </method>
+            <method name="ReadUInt32At" signature="(System.Byte[],System.Int32)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="505" hits="1619458" branch="False" />
+              </lines>
+            </method>
+            <method name="DosDateTimeToDateTime" signature="(System.UInt16,System.UInt16)" line-rate="1" branch-rate="1" complexity="18">
+              <lines>
+                <line number="508" hits="2536147" branch="False" />
+                <line number="509" hits="2536160" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="2" type="jump" coverage="100%" />
+                    <condition number="13" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="511" hits="2536134" branch="False" />
+                <line number="512" hits="2536134" branch="False" />
+                <line number="513" hits="2536134" branch="False" />
+                <line number="514" hits="2536134" branch="False" />
+                <line number="515" hits="2536134" branch="False" />
+                <line number="516" hits="2536134" branch="False" />
+                <line number="517" hits="2536134" branch="False" />
+                <line number="518" hits="2537632" branch="True" condition-coverage="100% (8/8)">
+                  <conditions>
+                    <condition number="82" type="jump" coverage="100%" />
+                    <condition number="88" type="jump" coverage="100%" />
+                    <condition number="93" type="jump" coverage="100%" />
+                    <condition number="108" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="519" hits="2535873" branch="True" condition-coverage="100% (6/6)">
+                  <conditions>
+                    <condition number="126" type="jump" coverage="100%" />
+                    <condition number="132" type="jump" coverage="100%" />
+                    <condition number="147" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="520" hits="2533399" branch="False" />
+                <line number="522" hits="72" branch="False" />
+                <line number="523" hits="2536147" branch="False" />
+              </lines>
+            </method>
+            <method name=".cctor" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="31" hits="1" branch="False" />
+                <line number="32" hits="1" branch="False" />
+                <line number="33" hits="1" branch="False" />
+                <line number="34" hits="1" branch="False" />
+                <line number="35" hits="1" branch="False" />
+                <line number="36" hits="1" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="41" hits="28" branch="False" />
+            <line number="42" hits="28" branch="False" />
+            <line number="43" hits="28" branch="False" />
+            <line number="45" hits="28" branch="False" />
+            <line number="46" hits="28" branch="False" />
+            <line number="48" hits="28" branch="False" />
+            <line number="49" hits="28" branch="False" />
+            <line number="50" hits="28" branch="False" />
+            <line number="51" hits="28" branch="False" />
+            <line number="52" hits="28" branch="False" />
+            <line number="53" hits="28" branch="False" />
+            <line number="55" hits="28" branch="False" />
+            <line number="57" hits="1030" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="252" type="jump" coverage="100%" />
+                <condition number="232" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="58" hits="487" branch="False" />
+            <line number="59" hits="487" branch="False" />
+            <line number="60" hits="487" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="116" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="61" hits="487" branch="False" />
+            <line number="62" hits="487" branch="False" />
+            <line number="64" hits="487" branch="False" />
+            <line number="65" hits="487" branch="False" />
+            <line number="66" hits="487" branch="False" />
+            <line number="67" hits="487" branch="False" />
+            <line number="68" hits="487" branch="False" />
+            <line number="69" hits="487" branch="False" />
+            <line number="71" hits="487" branch="False" />
+            <line number="72" hits="487" branch="False" />
+            <line number="73" hits="487" branch="False" />
+            <line number="75" hits="1619701" branch="False" />
+            <line number="76" hits="1619701" branch="False" />
+            <line number="78" hits="28" branch="False" />
+            <line number="79" hits="28" branch="False" />
+            <line number="82" hits="487" branch="False" />
+            <line number="85" hits="487" branch="False" />
+            <line number="86" hits="487" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="12" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="88" hits="487" branch="False" />
+            <line number="89" hits="487" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="30" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="90" hits="487" branch="False" />
+            <line number="91" hits="487" branch="False" />
+            <line number="93" hits="487" branch="False" />
+            <line number="94" hits="487" branch="False" />
+            <line number="99" hits="487" branch="False" />
+            <line number="100" hits="487" branch="False" />
+            <line number="101" hits="487" branch="False" />
+            <line number="102" hits="487" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="22" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="103" hits="355" branch="False" />
+            <line number="105" hits="1454633" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="289" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="106" hits="1454517" branch="False" />
+            <line number="107" hits="1454517" branch="False" />
+            <line number="108" hits="1454517" branch="True" condition-coverage="100% (6/6)">
+              <conditions>
+                <condition number="50" type="jump" coverage="100%" />
+                <condition number="56" type="jump" coverage="100%" />
+                <condition number="72" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="109" hits="1051007" branch="False" />
+            <line number="110" hits="1051007" branch="False" />
+            <line number="111" hits="1051007" branch="False" />
+            <line number="112" hits="1051007" branch="False" />
+            <line number="113" hits="403510" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="104" type="jump" coverage="100%" />
+                <condition number="120" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="114" hits="363866" branch="False" />
+            <line number="115" hits="363866" branch="False" />
+            <line number="116" hits="363866" branch="False" />
+            <line number="117" hits="363866" branch="False" />
+            <line number="118" hits="39644" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="152" type="jump" coverage="100%" />
+                <condition number="168" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="119" hits="30761" branch="False" />
+            <line number="120" hits="30761" branch="False" />
+            <line number="121" hits="30761" branch="False" />
+            <line number="122" hits="30761" branch="False" />
+            <line number="123" hits="8883" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="197" type="jump" coverage="100%" />
+                <condition number="213" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="124" hits="8745" branch="False" />
+            <line number="125" hits="8745" branch="False" />
+            <line number="126" hits="8745" branch="False" />
+            <line number="127" hits="8745" branch="False" />
+            <line number="129" hits="138" branch="False" />
+            <line number="130" hits="138" branch="False" />
+            <line number="131" hits="138" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="254" type="jump" coverage="100%" />
+                <condition number="268" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="132" hits="122" branch="False" />
+            <line number="134" hits="16" branch="False" />
+            <line number="135" hits="122" branch="False" />
+            <line number="136" hits="1454501" branch="False" />
+            <line number="138" hits="132" branch="False" />
+            <line number="139" hits="487" branch="False" />
+            <line number="144" hits="132" branch="False" />
+            <line number="145" hits="132" branch="False" />
+            <line number="146" hits="132" branch="False" />
+            <line number="148" hits="38608579" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="57" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="149" hits="38608447" branch="False" />
+            <line number="150" hits="38608447" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="27" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="151" hits="164807" branch="False" />
+            <line number="152" hits="164807" branch="False" />
+            <line number="153" hits="164807" branch="False" />
+            <line number="154" hits="164807" branch="False" />
+            <line number="156" hits="38443640" branch="False" />
+            <line number="157" hits="38443640" branch="False" />
+            <line number="159" hits="132" branch="False" />
+            <line number="160" hits="132" branch="False" />
+            <line number="169" hits="169503898" branch="False" />
+            <line number="170" hits="169503898" branch="False" />
+            <line number="171" hits="169503898" branch="False" />
+            <line number="173" hits="169503898" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="19" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="174" hits="338695524" branch="True" condition-coverage="100% (6/6)">
+              <conditions>
+                <condition number="33" type="jump" coverage="100%" />
+                <condition number="40" type="jump" coverage="100%" />
+                <condition number="57" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="175" hits="458550" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="91" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="177" hits="165994" branch="False" />
+            <line number="178" hits="166236" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="109" type="jump" coverage="100%" />
+                <condition number="123" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="180" hits="165752" branch="False" />
+            <line number="181" hits="166425" branch="True" condition-coverage="75% (3/4)">
+              <conditions>
+                <condition number="149" type="jump" coverage="50%" />
+                <condition number="166" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="183" hits="165079" branch="False" />
+            <line number="184" hits="165079" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="194" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="187" hits="4421350" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="242" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="188" hits="2045596" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="220" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="190" hits="165079" branch="False" />
+            <line number="191" hits="165079" branch="False" />
+            <line number="192" hits="165079" branch="False" />
+            <line number="194" hits="165079" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="284" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="195" hits="165079" branch="False" />
+            <line number="196" hits="165079" branch="False" />
+            <line number="197" hits="169503898" branch="False" />
+            <line number="206" hits="487" branch="False" />
+            <line number="207" hits="261791332" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="62" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="208" hits="130895311" branch="False" />
+            <line number="209" hits="130895311" branch="True" condition-coverage="100% (6/6)">
+              <conditions>
+                <condition number="17" type="jump" coverage="100%" />
+                <condition number="21" type="jump" coverage="100%" />
+                <condition number="39" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="210" hits="130895311" branch="False" />
+            <line number="211" hits="130895311" branch="False" />
+            <line number="212" hits="132" branch="False" />
+            <line number="213" hits="132" branch="False" />
+            <line number="215" hits="130895179" branch="False" />
+            <line number="216" hits="355" branch="False" />
+            <line number="217" hits="487" branch="False" />
+            <line number="228" hits="487" branch="False" />
+            <line number="230" hits="165294" branch="False" />
+            <line number="231" hits="487" branch="False" />
+            <line number="232" hits="487" branch="False" />
+            <line number="234" hits="487" branch="False" />
+            <line number="235" hits="25104" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="133" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="236" hits="12065" branch="False" />
+            <line number="237" hits="12065" branch="False" />
+            <line number="238" hits="12065" branch="False" />
+            <line number="239" hits="12065" branch="False" />
+            <line number="240" hits="12065" branch="False" />
+            <line number="243" hits="487" branch="False" />
+            <line number="245" hits="331075" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="495" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="246" hits="164807" branch="False" />
+            <line number="247" hits="164807" branch="False" />
+            <line number="249" hits="329335" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="242" type="jump" coverage="100%" />
+                <condition number="210" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="250" hits="164528" branch="False" />
+            <line number="252" hits="164807" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="257" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="253" hits="163915" branch="False" />
+            <line number="254" hits="163915" branch="False" />
+            <line number="255" hits="163915" branch="False" />
+            <line number="256" hits="163915" branch="False" />
+            <line number="258" hits="892" branch="False" />
+            <line number="259" hits="892" branch="False" />
+            <line number="260" hits="892" branch="False" />
+            <line number="261" hits="892" branch="False" />
+            <line number="263" hits="164807" branch="False" />
+            <line number="264" hits="3214242" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="464" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="265" hits="1442314" branch="False" />
+            <line number="266" hits="1442314" branch="False" />
+            <line number="267" hits="1442314" branch="False" />
+            <line number="268" hits="1442314" branch="False" />
+            <line number="269" hits="1442314" branch="False" />
+            <line number="271" hits="164807" branch="False" />
+            <line number="272" hits="164807" branch="False" />
+            <line number="273" hits="487" branch="False" />
+            <line number="278" hits="487" branch="False" />
+            <line number="279" hits="487" branch="False" />
+            <line number="280" hits="364310" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="101" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="281" hits="181800" branch="False" />
+            <line number="282" hits="363419" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="34" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="284" hits="181" branch="False" />
+            <line number="285" hits="183" branch="True" condition-coverage="75% (3/4)">
+              <conditions>
+                <condition number="48" type="jump" coverage="50%" />
+                <condition number="66" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="286" hits="179" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="81" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="287" hits="132" branch="False" />
+            <line number="288" hits="47" branch="False" />
+            <line number="289" hits="355" branch="False" />
+            <line number="290" hits="487" branch="False" />
+            <line number="293" hits="138" branch="False" />
+            <line number="294" hits="138" branch="False" />
+            <line number="295" hits="20404" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="87" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="296" hits="10186" branch="False" />
+            <line number="297" hits="10186" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="31" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="298" hits="151" branch="False" />
+            <line number="299" hits="151" branch="False" />
+            <line number="300" hits="151" branch="True" condition-coverage="66.66% (4/6)">
+              <conditions>
+                <condition number="44" type="jump" coverage="50%" />
+                <condition number="50" type="jump" coverage="50%" />
+                <condition number="66" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="301" hits="122" branch="False" />
+            <line number="302" hits="29" branch="False" />
+            <line number="303" hits="10064" branch="False" />
+            <line number="304" hits="16" branch="False" />
+            <line number="305" hits="138" branch="False" />
+            <line number="308" hits="332" branch="False" />
+            <line number="309" hits="332" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="14" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="310" hits="332" branch="False" />
+            <line number="311" hits="332" branch="False" />
+            <line number="312" hits="332" branch="False" />
+            <line number="313" hits="332" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="50" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="314" hits="332" branch="False" />
+            <line number="315" hits="332" branch="False" />
+            <line number="317" hits="192648" branch="True" condition-coverage="100% (12/12)">
+              <conditions>
+                <condition number="7" type="jump" coverage="100%" />
+                <condition number="12" type="jump" coverage="100%" />
+                <condition number="26" type="jump" coverage="100%" />
+                <condition number="33" type="jump" coverage="100%" />
+                <condition number="19" type="jump" coverage="100%" />
+                <condition number="40" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="318" hits="192648" branch="False" />
+            <line number="319" hits="541" branch="False" />
+            <line number="320" hits="128" branch="False" />
+            <line number="321" hits="155" branch="False" />
+            <line number="322" hits="178" branch="False" />
+            <line number="323" hits="63" branch="False" />
+            <line number="324" hits="191583" branch="False" />
+            <line number="325" hits="192648" branch="False" />
+            <line number="328" hits="192316" branch="False" />
+            <line number="329" hits="192316" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="14" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="330" hits="192316" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="33" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="331" hits="192316" branch="False" />
+            <line number="334" hits="1455112" branch="False" />
+            <line number="335" hits="1455112" branch="True" condition-coverage="100% (6/6)">
+              <conditions>
+                <condition number="7" type="jump" coverage="100%" />
+                <condition number="15" type="jump" coverage="100%" />
+                <condition number="27" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="336" hits="1455112" branch="False" />
+            <line number="337" hits="1455112" branch="False" />
+            <line number="338" hits="1455112" branch="False" />
+            <line number="339" hits="1455112" branch="False" />
+            <line number="342" hits="1051007" branch="False" />
+            <line number="343" hits="1051007" branch="False" />
+            <line number="344" hits="1051007" branch="False" />
+            <line number="345" hits="1051007" branch="False" />
+            <line number="347" hits="1051007" branch="False" />
+            <line number="348" hits="1051007" branch="False" />
+            <line number="349" hits="1051007" branch="False" />
+            <line number="350" hits="1051007" branch="False" />
+            <line number="351" hits="1051007" branch="False" />
+            <line number="352" hits="1051007" branch="False" />
+            <line number="353" hits="1051007" branch="False" />
+            <line number="355" hits="1051007" branch="False" />
+            <line number="356" hits="1051007" branch="False" />
+            <line number="357" hits="1051007" branch="False" />
+            <line number="358" hits="1051007" branch="False" />
+            <line number="359" hits="1051007" branch="False" />
+            <line number="360" hits="1051007" branch="False" />
+            <line number="361" hits="1051007" branch="False" />
+            <line number="362" hits="1051007" branch="False" />
+            <line number="363" hits="1051007" branch="False" />
+            <line number="366" hits="363866" branch="False" />
+            <line number="367" hits="363866" branch="False" />
+            <line number="368" hits="363866" branch="False" />
+            <line number="369" hits="363866" branch="False" />
+            <line number="371" hits="363866" branch="False" />
+            <line number="372" hits="363866" branch="False" />
+            <line number="373" hits="363866" branch="False" />
+            <line number="374" hits="363866" branch="False" />
+            <line number="375" hits="363866" branch="False" />
+            <line number="377" hits="363866" branch="False" />
+            <line number="378" hits="363866" branch="False" />
+            <line number="379" hits="363866" branch="False" />
+            <line number="380" hits="363866" branch="False" />
+            <line number="381" hits="363866" branch="False" />
+            <line number="382" hits="363866" branch="False" />
+            <line number="383" hits="363866" branch="False" />
+            <line number="384" hits="363866" branch="False" />
+            <line number="387" hits="30761" branch="False" />
+            <line number="388" hits="30761" branch="False" />
+            <line number="389" hits="30761" branch="False" />
+            <line number="390" hits="30761" branch="False" />
+            <line number="392" hits="30761" branch="False" />
+            <line number="393" hits="30761" branch="False" />
+            <line number="394" hits="30761" branch="False" />
+            <line number="395" hits="30761" branch="False" />
+            <line number="396" hits="30761" branch="False" />
+            <line number="397" hits="30761" branch="False" />
+            <line number="398" hits="30761" branch="False" />
+            <line number="399" hits="30761" branch="False" />
+            <line number="401" hits="30761" branch="False" />
+            <line number="402" hits="30761" branch="False" />
+            <line number="403" hits="30761" branch="False" />
+            <line number="404" hits="30761" branch="False" />
+            <line number="405" hits="30761" branch="False" />
+            <line number="406" hits="30761" branch="False" />
+            <line number="407" hits="30761" branch="False" />
+            <line number="408" hits="30761" branch="False" />
+            <line number="409" hits="30761" branch="False" />
+            <line number="415" hits="8745" branch="False" />
+            <line number="416" hits="8745" branch="False" />
+            <line number="417" hits="8745" branch="False" />
+            <line number="418" hits="8745" branch="False" />
+            <line number="420" hits="8745" branch="False" />
+            <line number="421" hits="8745" branch="False" />
+            <line number="422" hits="8745" branch="False" />
+            <line number="423" hits="8745" branch="False" />
+            <line number="425" hits="8745" branch="False" />
+            <line number="426" hits="8745" branch="False" />
+            <line number="427" hits="8745" branch="False" />
+            <line number="428" hits="8745" branch="False" />
+            <line number="429" hits="8745" branch="False" />
+            <line number="430" hits="8745" branch="False" />
+            <line number="431" hits="8745" branch="False" />
+            <line number="432" hits="8745" branch="False" />
+            <line number="437" hits="28" branch="False" />
+            <line number="438" hits="28" branch="False" />
+            <line number="439" hits="28" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="40" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="440" hits="0" branch="False" />
+            <line number="441" hits="28" branch="False" />
+            <line number="442" hits="28" branch="False" />
+            <line number="444" hits="28" branch="False" />
+            <line number="445" hits="28" branch="False" />
+            <line number="446" hits="1038" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="120" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="447" hits="491" branch="False" />
+            <line number="449" hits="28" branch="False" />
+            <line number="450" hits="28" branch="False" />
+            <line number="451" hits="28" branch="False" />
+            <line number="453" hits="28" branch="False" />
+            <line number="454" hits="28" branch="False" />
+            <line number="457" hits="28" branch="False" />
+            <line number="458" hits="28" branch="False" />
+            <line number="459" hits="28" branch="False" />
+            <line number="461" hits="357700438" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="354" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="462" hits="178850191" branch="False" />
+            <line number="463" hits="2147483647" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="331" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="464" hits="1073101146" branch="False" />
+            <line number="465" hits="1073101146" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="108" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="466" hits="2142656676" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="134" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="467" hits="3545616" branch="False" />
+            <line number="468" hits="7090743" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="177" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="470" hits="489" branch="False" />
+            <line number="471" hits="10536" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="289" type="jump" coverage="100%" />
+                <condition number="270" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="472" hits="5254" branch="False" />
+            <line number="473" hits="5254" branch="True" condition-coverage="100% (6/6)">
+              <conditions>
+                <condition number="207" type="jump" coverage="100%" />
+                <condition number="214" type="jump" coverage="100%" />
+                <condition number="231" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="474" hits="475" branch="False" />
+            <line number="475" hits="475" branch="False" />
+            <line number="476" hits="475" branch="False" />
+            <line number="478" hits="4779" branch="False" />
+            <line number="479" hits="489" branch="False" />
+            <line number="480" hits="489" branch="False" />
+            <line number="481" hits="178850191" branch="False" />
+            <line number="482" hits="28" branch="False" />
+            <line number="483" hits="28" branch="False" />
+            <line number="488" hits="1647165" branch="False" />
+            <line number="491" hits="7964109" branch="False" />
+            <line number="492" hits="7964109" branch="False" />
+            <line number="493" hits="7964109" branch="False" />
+            <line number="494" hits="7964109" branch="False" />
+            <line number="495" hits="7964109" branch="False" />
+            <line number="498" hits="1454379" branch="False" />
+            <line number="499" hits="1454379" branch="False" />
+            <line number="500" hits="1454379" branch="False" />
+            <line number="501" hits="1454379" branch="False" />
+            <line number="502" hits="1454379" branch="False" />
+            <line number="505" hits="1619458" branch="False" />
+            <line number="508" hits="2536147" branch="False" />
+            <line number="509" hits="2536160" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="2" type="jump" coverage="100%" />
+                <condition number="13" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="511" hits="2536134" branch="False" />
+            <line number="512" hits="2536134" branch="False" />
+            <line number="513" hits="2536134" branch="False" />
+            <line number="514" hits="2536134" branch="False" />
+            <line number="515" hits="2536134" branch="False" />
+            <line number="516" hits="2536134" branch="False" />
+            <line number="517" hits="2536134" branch="False" />
+            <line number="518" hits="2537632" branch="True" condition-coverage="100% (8/8)">
+              <conditions>
+                <condition number="82" type="jump" coverage="100%" />
+                <condition number="88" type="jump" coverage="100%" />
+                <condition number="93" type="jump" coverage="100%" />
+                <condition number="108" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="519" hits="2535873" branch="True" condition-coverage="100% (6/6)">
+              <conditions>
+                <condition number="126" type="jump" coverage="100%" />
+                <condition number="132" type="jump" coverage="100%" />
+                <condition number="147" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="520" hits="2533399" branch="False" />
+            <line number="522" hits="72" branch="False" />
+            <line number="523" hits="2536147" branch="False" />
+            <line number="31" hits="1" branch="False" />
+            <line number="32" hits="1" branch="False" />
+            <line number="33" hits="1" branch="False" />
+            <line number="34" hits="1" branch="False" />
+            <line number="35" hits="1" branch="False" />
+            <line number="36" hits="1" branch="False" />
+          </lines>
+        </class>
+        <class name="Woistes.CtfParser.CtfFileParser/CatalogueHeader" filename="Woistes.CtfParser\CtfFileParser.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Name" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="535" hits="571" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="535" hits="571" branch="False" />
+          </lines>
+        </class>
+        <class name="Woistes.CtfParser.CtfFileParser/DiskHeaderInfo" filename="Woistes.CtfParser\CtfFileParser.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Offset" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="536" hits="2411" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="536" hits="2411" branch="False" />
+          </lines>
+        </class>
+        <class name="Woistes.CtfParser.CtfFileParser/DirRecord" filename="Woistes.CtfParser\CtfFileParser.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Name" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="537" hits="1317557" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="537" hits="1317557" branch="False" />
+          </lines>
+        </class>
+        <class name="Woistes.CtfParser.CtfFileParser/&lt;Flatten&gt;d__32" filename="Woistes.CtfParser\CtfFileParser.cs" line-rate="1" branch-rate="1" complexity="4">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="1" branch-rate="1" complexity="4">
+              <lines>
+                <line number="526" hits="3239346" branch="False" />
+                <line number="527" hits="16194782" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="273" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="528" hits="3238372" branch="False" />
+                <line number="529" hits="3238372" branch="False" />
+                <line number="530" hits="43522460" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="238" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="531" hits="16903672" branch="False" />
+                <line number="532" hits="3238372" branch="False" />
+                <line number="533" hits="3239346" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="526" hits="3239346" branch="False" />
+            <line number="527" hits="16194782" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="273" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="528" hits="3238372" branch="False" />
+            <line number="529" hits="3238372" branch="False" />
+            <line number="530" hits="43522460" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="238" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="531" hits="16903672" branch="False" />
+            <line number="532" hits="3238372" branch="False" />
+            <line number="533" hits="3239346" branch="False" />
+          </lines>
+        </class>
+      </classes>
+    </package>
+    <package name="Woistes.Domain" line-rate="0.6071" branch-rate="1" complexity="28">
+      <classes>
+        <class name="Woistes.Domain.Catalogue" filename="Woistes.Domain\Catalogue.cs" line-rate="0.8571" branch-rate="1" complexity="7">
+          <methods>
+            <method name="get_Id" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="5" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_Name" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="6" hits="61" branch="False" />
+              </lines>
+            </method>
+            <method name="get_SourceFileName" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="7" hits="56" branch="False" />
+              </lines>
+            </method>
+            <method name="get_ImportedDate" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="28" branch="False" />
+              </lines>
+            </method>
+            <method name="get_FileCount" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="9" hits="30" branch="False" />
+              </lines>
+            </method>
+            <method name="get_FolderCount" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="10" hits="30" branch="False" />
+              </lines>
+            </method>
+            <method name="get_Disks" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="11" hits="604" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="5" hits="0" branch="False" />
+            <line number="6" hits="61" branch="False" />
+            <line number="7" hits="56" branch="False" />
+            <line number="8" hits="28" branch="False" />
+            <line number="9" hits="30" branch="False" />
+            <line number="10" hits="30" branch="False" />
+            <line number="11" hits="604" branch="False" />
+          </lines>
+        </class>
+        <class name="Woistes.Domain.CatalogueEntry" filename="Woistes.Domain\CatalogueEntry.cs" line-rate="0.7" branch-rate="1" complexity="10">
+          <methods>
+            <method name="get_Id" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="5" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_DiskId" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="6" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_ParentId" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="7" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_Name" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="4692817" branch="False" />
+              </lines>
+            </method>
+            <method name="get_IsDirectory" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="9" hits="4986790" branch="False" />
+              </lines>
+            </method>
+            <method name="get_FullPath" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="10" hits="4844643" branch="False" />
+              </lines>
+            </method>
+            <method name="get_Size" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="11" hits="1454420" branch="False" />
+              </lines>
+            </method>
+            <method name="get_CreatedDate" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="12" hits="1081768" branch="False" />
+              </lines>
+            </method>
+            <method name="get_ModifiedDate" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="13" hits="1454379" branch="False" />
+              </lines>
+            </method>
+            <method name="get_Children" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="14" hits="6769622" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="5" hits="0" branch="False" />
+            <line number="6" hits="0" branch="False" />
+            <line number="7" hits="0" branch="False" />
+            <line number="8" hits="4692817" branch="False" />
+            <line number="9" hits="4986790" branch="False" />
+            <line number="10" hits="4844643" branch="False" />
+            <line number="11" hits="1454420" branch="False" />
+            <line number="12" hits="1081768" branch="False" />
+            <line number="13" hits="1454379" branch="False" />
+            <line number="14" hits="6769622" branch="False" />
+          </lines>
+        </class>
+        <class name="Woistes.Domain.Disk" filename="Woistes.Domain\Disk.cs" line-rate="0.4" branch-rate="1" complexity="10">
+          <methods>
+            <method name="get_Id" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="5" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_CatalogueId" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="6" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_VolumeLabel" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="7" hits="980" branch="False" />
+              </lines>
+            </method>
+            <method name="get_FilesystemType" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="981" branch="False" />
+              </lines>
+            </method>
+            <method name="get_SerialNumber" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="9" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_TotalSize" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="10" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_FreeSpace" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="11" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_OriginalScanDate" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="12" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_DiskIndex" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="13" hits="487" branch="False" />
+              </lines>
+            </method>
+            <method name="get_Entries" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="14" hits="14456" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="5" hits="0" branch="False" />
+            <line number="6" hits="0" branch="False" />
+            <line number="7" hits="980" branch="False" />
+            <line number="8" hits="981" branch="False" />
+            <line number="9" hits="0" branch="False" />
+            <line number="10" hits="0" branch="False" />
+            <line number="11" hits="0" branch="False" />
+            <line number="12" hits="0" branch="False" />
+            <line number="13" hits="487" branch="False" />
+            <line number="14" hits="14456" branch="False" />
+          </lines>
+        </class>
+        <class name="Woistes.Domain.ImportProgress" filename="Woistes.Domain\ImportProgress.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_DisksSaved" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="0" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="8" hits="0" branch="False" />
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>

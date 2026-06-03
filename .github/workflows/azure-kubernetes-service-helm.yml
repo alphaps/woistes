@@ -66,6 +66,41 @@ jobs:
       - name: Run tests
         run: dotnet test --no-build --verbosity normal
 
+  # Code coverage is informational only: it runs in parallel with `test`, is not
+  # in any `needs` chain, and never blocks build/deploy. Coverage instrumentation
+  # noticeably slows the parser tests, so it is kept off the gating `test` job.
+  coverage:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Collect coverage
+        run: dotnet test --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+      - name: Generate coverage report
+        uses: danielpalme/ReportGenerator-GitHub-Action@5
+        with:
+          reports: 'TestResults/**/coverage.cobertura.xml'
+          targetdir: 'CoverageReport'
+          reporttypes: 'HtmlInline;TextSummary;MarkdownSummaryGithub'
+
+      - name: Add coverage to job summary
+        if: always()
+        run: cat CoverageReport/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: CoverageReport
+
   buildImage:
     needs: [test]
     permissions:
