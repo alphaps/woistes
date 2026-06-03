@@ -4,5 +4,10 @@ obj/
 *.user
 *.suo
 
+# Test/coverage output
+TestResults/
+CoverageReport/
+*.cobertura.xml
+
 # Local secrets for docker-compose (never commit real credentials)
 .env

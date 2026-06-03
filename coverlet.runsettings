@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Coverage settings. Excludes code that isn't meaningfully unit-testable so the
+  reported number reflects real coverage of our own logic:
+    - EF Core migrations and the model snapshot (generated code)
+    - the design-time DbContext factory (only used by the EF CLI)
+  Note: the Blazor Razor components are NOT excluded — their 0% is a real,
+  acknowledged gap (integration tests exercise endpoints, not the rendered UI).
+-->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <ExcludeByFile>**/Migrations/*.cs,**/DesignTimeDbContextFactory.cs</ExcludeByFile>
+          <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+          <SkipAutoProps>true</SkipAutoProps>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
