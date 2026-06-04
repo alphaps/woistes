@@ -69,6 +69,11 @@ jobs:
   # Code coverage is informational only: it runs in parallel with `test`, is not
   # in any `needs` chain, and never blocks build/deploy. Coverage instrumentation
   # noticeably slows the parser tests, so it is kept off the gating `test` job.
+  #
+  # NOTE: the CtfParser tests need the large sample .CTF files, which are NOT in
+  # the repo (a deliberate choice — see SPEC). On CI those files are absent, so
+  # the parser tests no-op (and `Woistes.CtfParser` reports ~0% here). Parser
+  # coverage (~99%) is only meaningful when run locally with sampleCTF/ present.
   coverage:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -81,21 +86,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Collect coverage
-        # Remove any stale/checked-in coverage files first so only freshly
-        # generated reports are merged (a stale report can wrongly show an
-        # assembly at 0%).
-        run: |
-          rm -rf ./TestResults ./CoverageReport
-          dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory ./TestResults
-
-      - name: List raw coverage reports (diagnostic)
-        if: always()
-        run: |
-          echo "Cobertura files found:"
-          for f in $(find TestResults -name coverage.cobertura.xml); do
-            echo "--- $f"
-            grep -oE 'name="Woistes[^"]*" line-rate="[0-9.]+"' "$f" | head
-          done
+        run: dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory ./TestResults
 
       - name: Generate coverage report
         uses: danielpalme/ReportGenerator-GitHub-Action@5
