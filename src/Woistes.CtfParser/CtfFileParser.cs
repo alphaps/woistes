@@ -25,14 +25,16 @@ public class CtfFileParser : ICtfParser
     private const ushort MarkerAttr = 0x000C;    // 17 bytes: attr byte + full date-times + size
     private const ushort MarkerFull2 = 0x002C;   // 16 bytes: same layout as MarkerFull
     private const ushort MarkerGid = 0x0048;     // 13 bytes
+    private const ushort MarkerFullExt = 0x041C; // 18 bytes: like MarkerFull + 2 extra bytes before size (rare)
 
     // Directory-record type byte (the 3rd byte of the 02 00 TT 00 marker) mapped
-    // to its payload length (bytes after the name). Three variants exist.
+    // to its payload length (bytes after the name). Four variants are known.
     private static readonly Dictionary<byte, int> DirPayloadLengths = new()
     {
         [0x0C] = 40,
         [0x18] = 36,
         [0x2C] = 41,
+        [0x38] = 37,
     };
 
     private const uint Sentinel = 0xFFFFFFFF;
@@ -52,7 +54,11 @@ public class CtfFileParser : ICtfParser
             ImportedDate = DateTime.UtcNow,
         };
 
-        var diskHeaders = FindAllDiskHeaders(data);
+        // Primary: walk the disk-descriptor length chain (robust, gives exact
+        // boundaries, labels and root counts). Fall back to the legacy FS-string
+        // scan only if the chain doesn't validate (doesn't end at EOF).
+        var diskHeaders = ReadDiskDescriptors(data, pos, header.DiskCount)
+            ?? FindAllDiskHeaders(data);
 
         for (int diskIdx = 0; diskIdx < header.DiskCount && diskIdx < diskHeaders.Count; diskIdx++)
         {
@@ -124,6 +130,11 @@ public class CtfFileParser : ICtfParser
             {
                 pos += 2;
                 files.Add(ReadFileEntryGid(data, ref pos));
+            }
+            else if (marker == MarkerFullExt && IsValidNameStart(data, pos))
+            {
+                pos += 2;
+                files.Add(ReadFileEntryFullExt(data, ref pos));
             }
             else
             {
@@ -321,6 +332,7 @@ public class CtfFileParser : ICtfParser
         MarkerShort => 12,
         MarkerAttr => 17,
         MarkerGid => 13,
+        MarkerFullExt => 18,
         _ => -1,
     };
 
@@ -431,6 +443,33 @@ public class CtfFileParser : ICtfParser
         };
     }
 
+    // Rare 18-byte metadata variant (marker 0x041C): like the 16-byte Full record
+    // (mod/cre/acc DOS date-time) but with 2 extra bytes before the 4-byte size.
+    private static CatalogueEntry ReadFileEntryFullExt(byte[] data, ref int pos)
+    {
+        var nameLen = data[pos++];
+        var name = Encoding.Default.GetString(data, pos, nameLen);
+        pos += nameLen;
+
+        var modTime = ReadUInt16(data, ref pos);
+        var modDate = ReadUInt16(data, ref pos);
+        var creTime = ReadUInt16(data, ref pos);
+        var creDate = ReadUInt16(data, ref pos);
+        ReadUInt16(data, ref pos);  // accTime
+        ReadUInt16(data, ref pos);  // accDate
+        pos += 2;                   // 2 unidentified bytes
+        var size = ReadUInt32(data, ref pos);
+
+        return new CatalogueEntry
+        {
+            Name = name,
+            IsDirectory = false,
+            Size = size,
+            ModifiedDate = DosDateTimeToDateTime(modDate, modTime),
+            CreatedDate = DosDateTimeToDateTime(creDate, creTime),
+        };
+    }
+
     // ---- Header & disk-header scanning ------------------------------------
 
     private static CatalogueHeader ReadHeader(byte[] data, ref int pos)
@@ -451,6 +490,63 @@ public class CtfFileParser : ICtfParser
         pos += nameLength;
 
         return new CatalogueHeader(name, diskCount, diskIds);
+    }
+
+    // Disk descriptors form a length chain immediately after the catalogue header
+    // (8 zero pad bytes, then one descriptor per disk). Each descriptor:
+    //   +0  u8  marker low byte (0x03 real disk, 0x13 CD, 0x83 virtual root folder)
+    //   +1  u8  marker high byte (0x00)
+    //   +8  u32 section length (descriptor + all content) — drives the chain
+    //   +24 u32 root file count
+    //   +32 u16 label length, +34 label bytes
+    // Returns null if the chain doesn't validate (so the caller falls back to the
+    // legacy FS-string scan for any format this doesn't fit).
+    private static List<DiskHeaderInfo>? ReadDiskDescriptors(byte[] data, int afterHeaderPos, int diskCount)
+    {
+        const int padBytes = 8;
+        var result = new List<DiskHeaderInfo>(diskCount);
+        int p = afterHeaderPos + padBytes;
+
+        for (int i = 0; i < diskCount; i++)
+        {
+            if (p + 36 > data.Length) return null;
+            if (data[p + 1] != 0x00) return null;                 // marker high byte
+            uint sectionLen = ReadUInt32At(data, p + 8);
+            if (sectionLen == 0 || (long)p + sectionLen > data.Length) return null;
+
+            int labelLen = data[p + 32] | (data[p + 33] << 8);
+            if (labelLen < 1 || labelLen > 200 || p + 34 + labelLen > data.Length) return null;
+            var label = Encoding.Default.GetString(data, p + 34, labelLen);
+
+            // DataStart: just past the label; the file-entry scan starts here and
+            // skips forward to the first real entry (past the inline FS node).
+            int dataStart = p + 34 + labelLen;
+            var fs = ReadFilesystemName(data, dataStart, dataStart + 200);
+
+            result.Add(new DiskHeaderInfo(p, fs, label, dataStart));
+            p += (int)sectionLen;
+        }
+
+        // The chain must consume the file exactly; otherwise it isn't this format.
+        return p == data.Length ? result : null;
+    }
+
+    // Reads the first [len][NAME] filesystem string in [from, end), case-insensitively.
+    private static string ReadFilesystemName(byte[] data, int from, int end)
+    {
+        var fsPatterns = new[] { "FAT32", "exFAT", "FAT", "NTFS", "CDFS", "UDF" };
+        end = Math.Min(end, data.Length);
+        for (int i = from; i < end; i++)
+        {
+            foreach (var fs in fsPatterns)
+            {
+                if (data[i] != fs.Length || i + 1 + fs.Length > data.Length) continue;
+                var candidate = Encoding.ASCII.GetString(data, i + 1, fs.Length);
+                if (string.Equals(candidate, fs, StringComparison.OrdinalIgnoreCase))
+                    return fs;
+            }
+        }
+        return "";
     }
 
     private static List<DiskHeaderInfo> FindAllDiskHeaders(byte[] data)

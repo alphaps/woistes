@@ -36,7 +36,7 @@
             }
             else
             {
-                <table class="entry-table">
+                <table class="entry-table compact">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -47,15 +47,17 @@
                     <tbody>
                         @foreach (var entry in _entries)
                         {
-                            <tr>
+                            <tr class="@(entry.IsDirectory ? "dir-row" : "")">
                                 <td>
                                     @if (entry.IsDirectory)
                                     {
-                                        <a @onclick="() => NavigateTo(entry.Id)" @onclick:preventDefault>@entry.Name/</a>
+                                        <a class="dir-link" @onclick="() => NavigateTo(entry.Id)" @onclick:preventDefault>
+                                            <span class="icon-folder"></span>@entry.Name
+                                        </a>
                                     }
                                     else
                                     {
-                                        @entry.Name
+                                        <span class="icon-file"></span>@entry.Name
                                     }
                                 </td>
                                 <td>@(entry.IsDirectory ? "" : FormatSize(entry.Size))</td>

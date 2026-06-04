@@ -230,3 +230,59 @@ button:hover {
     color: #555;
     font-size: 0.9rem;
 }
+
+/* Browse file/folder table — compact with icons */
+.entry-table.compact {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.entry-table.compact th,
+.entry-table.compact td {
+    padding: 0.2rem 0.6rem;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;
+}
+
+.entry-table.compact th {
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+    padding: 0.4rem 0.6rem;
+}
+
+.entry-table.compact td:nth-child(2),
+.entry-table.compact th:nth-child(2) {
+    text-align: right;
+}
+
+.entry-table.compact .dir-row {
+    cursor: pointer;
+}
+
+.entry-table.compact .dir-row:hover {
+    background: #f0f7ff;
+}
+
+.dir-link {
+    color: #2c3e50;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.dir-link:hover {
+    color: #1a73e8;
+}
+
+.icon-folder::before {
+    content: "\1F4C1";
+    margin-right: 0.4rem;
+}
+
+.icon-file::before {
+    content: "\1F4C4";
+    margin-right: 0.4rem;
+    opacity: 0.5;
+}

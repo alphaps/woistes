@@ -182,6 +182,33 @@ public class CtfParserEntryTests
         Assert.Contains(newSetups.Children, c => !c.IsDirectory && c.Name.StartsWith("Adobe.Premiere"));
     }
 
+    // Regression: the "Alpha60" disk uses directory record type 0x38 (alongside
+    // 0x0C/0x18/0x2C). Before that type was recognised, its ~30 folders were
+    // skipped, so their ~870 files fell through to the disk root. Verified
+    // against the WhereIsIt GUI: Alpha60's root holds essentially just Autorun.inf.
+    // (Note: a single 0x041C entry on this disk — a 1-in-15k marker anomaly —
+    // is currently misparsed, so root may show 0 rather than 1 file. Acceptable;
+    // the important fix is that the hundreds of subfolder files no longer pollute root.)
+    [Fact]
+    public void Parse_120Go_Alpha60_RootIsNotPollutedByUnparsedFolders()
+    {
+        var catalogue = ParseFile("120 Go.CTF");
+        if (catalogue == null) return;
+        var alpha60 = catalogue.Disks.FirstOrDefault(d => d.VolumeLabel == "Alpha60");
+        Assert.NotNull(alpha60);
+
+        var rootFiles = alpha60.Entries.Count(e => !e.IsDirectory);
+        // Root should be tiny (just Autorun.inf), not hundreds of mp3s/avis that
+        // actually live in subfolders.
+        Assert.True(rootFiles <= 3, $"expected <=3 root files, got {rootFiles}");
+        Assert.Contains(alpha60.Entries, e => !e.IsDirectory && e.Name == "Autorun.inf");
+        Assert.DoesNotContain(alpha60.Entries, e => !e.IsDirectory && e.Name.EndsWith(".mp3"));
+        // The first-level subfolders are present and populated.
+        Assert.Contains(alpha60.Entries, e => e.IsDirectory && e.Name == "babel2");
+        var babel2 = alpha60.Entries.First(e => e.IsDirectory && e.Name == "babel2");
+        Assert.NotEmpty(babel2.Children);
+    }
+
     private static IEnumerable<CatalogueEntry> FlattenEntries(IEnumerable<CatalogueEntry> entries)
     {
         foreach (var entry in entries)

@@ -51,7 +51,8 @@ public class CtfParserHeaderTests
         var catalogue = ParseFile("Boumbo40.ctf");
         if (catalogue == null) return;
         var disk = catalogue.Disks[0];
-        Assert.Equal("Kingston", disk.VolumeLabel);
+        // Full label from the disk descriptor (the old FS-back-scan truncated it).
+        Assert.Equal("KingstonCle1Go", disk.VolumeLabel);
     }
 
     [Fact]
@@ -110,7 +111,10 @@ public class CtfParserHeaderTests
     {
         var catalogue = ParseFile("mypassport1000.CTF");
         if (catalogue == null) return;
-        Assert.Equal(4, catalogue.Disks.Count);
+        // 5 disks: tc_vol, T7, the pour_d virtual root folder, PersBert81,
+        // disqueE_LD5QAY. The old FS-string scan only found 4 (it missed the
+        // uppercase "EXFAT" disk); the descriptor chain finds all 5.
+        Assert.Equal(5, catalogue.Disks.Count);
     }
 
     [Fact]
@@ -120,6 +124,17 @@ public class CtfParserHeaderTests
         if (catalogue == null) return;
         var disk = catalogue.Disks[0];
         Assert.Equal("NTFS", disk.FilesystemType);
+    }
+
+    [Fact]
+    public void Parse_MyPassport_AllDiskLabelsFromDescriptorChain()
+    {
+        var catalogue = ParseFile("mypassport1000.CTF");
+        if (catalogue == null) return;
+        var labels = catalogue.Disks.Select(d => d.VolumeLabel).ToList();
+        Assert.Equal(
+            new[] { "tc_vol", "T7", "pour_d---referenceFigee22Jan12", "PersBert81", "disqueE_LD5QAY" },
+            labels);
     }
 
     [Fact]

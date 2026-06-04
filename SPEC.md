@@ -16,12 +16,12 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 
 - **Domain model** (`Woistes.Domain`): `Catalogue`, `Disk`, `CatalogueEntry` entities
 - **CTF Parser** (`Woistes.CtfParser`): fully working binary parser for CTF v3.00 files
-  - Parses all 5 file entry marker types (0x001C, 0x002C, 0x0058, 0x000C, 0x0048)
+  - Parses all 6 file entry marker types (0x001C, 0x002C, 0x0058, 0x000C, 0x0048, 0x041C)
   - **Pre-order tree model** (verified against the WhereIsIt GUI): each disk section is a flat file-entry run followed by a directory-record block; the tree is rebuilt via a depth stack where each folder consumes its `directFileCount` files. This replaced an earlier incorrect "global file index" model that truncated files and left populated folders empty.
-  - Three directory-record type variants (0x0C/0x18/0x2C) with distinct payload lengths (40/36/41 bytes)
-  - Detects disk boundaries via filesystem type string scanning
+  - Four directory-record type variants (0x0C/0x18/0x2C/0x38) with distinct payload lengths (40/36/41/37 bytes). (Each was found by a disk whose folders used a type the parser didn't yet know: a missing type silently drops those folders, dumping their files into the disk root. 0x38 was discovered via the "Alpha60" disk.)
+  - **Disk detection via descriptor length chain** (replaces FS-string scanning): walks per-disk descriptors after the header, giving exact boundaries, full labels, and authoritative root-file counts. Falls back to the legacy FS-scan if the chain doesn't validate. Verified on all 5 sample files; fixed mypassport showing 4 disks instead of 5 (the missed disk stored its FS as uppercase `EXFAT`) and truncated labels (e.g. `Kingston` → `KingstonCle1Go`).
   - Resync logic to recover from alignment gaps in the file region
-  - **28 passing tests** covering header parsing, file entries, directory tree, sizes, full paths, multi-disk support, and exact GUI-verified counts for `120 Go.CTF` disk 0 (17,195 files / 1,083 folders; root 13 files + 10 folders; "New Setups" 5 files + 2 subfolders)
+  - **30 passing tests** covering header parsing, file entries, directory tree, sizes, full paths, multi-disk support, exact GUI-verified counts for `120 Go.CTF` disk 0 (17,195 files / 1,083 folders; root 13 files + 10 folders), the Alpha60 0x38/0x041C regressions, and mypassport's 5-disk descriptor chain with correct labels
 - **EF Core data layer** (`Woistes.Infrastructure`): DbContext, entity configurations (with indexes on Name/FullPath/ParentId), `ICatalogueRepository` + SQL Server implementation with search (LIKE), tree browsing, and DI extension method
   - **Import persists the full entry tree in a single `SaveChanges`**: stamps `DiskId` recursively and adds the root entries; EF tracks the graph via the self-referencing `Children` navigation and assigns `ParentId` automatically. (Gotcha fixed: the prior code set `Children = []` before saving, discarding every nested entry so all folders browsed as empty; a per-level save approach was correct but did tens of thousands of round-trips — one graph save is both correct and fast.)
   - **Large-import tuning**: a catalogue like `120 Go.CTF` imports ~106k entries (95,505 files + 10,247 folders across 8 disks). Three levers keep this fast: (1) `AutoDetectChangesEnabled = false` around the bulk `AddRange` — EF's per-operation rescan is O(n²) and dominates otherwise; (2) SQL Server `MaxBatchSize(1000)` — fewer round-trips; (3) a `Logging` config (`Microsoft.EntityFrameworkCore: Warning`, `Microsoft.AspNetCore: Warning`). (Gotcha: default Information-level EF logging in Development logged ~106k SQL statements per import — looked like a runaway loop/flood, and writing that many lines to container stdout is itself a major slowdown.)
@@ -166,21 +166,32 @@ Fully reverse-engineered from analysis of WhereIsIt? 3.x `.CTF` binary files.
 | +0 | 2 | Catalogue name length (uint16 LE) |
 | +2 | varies | Catalogue name (ASCII, length-prefixed) |
 
-### Disk Headers (in-band markers)
+### Disk Descriptors (length chain) — primary detection
 
-Disk boundaries are identified by scanning for filesystem type strings in the binary. Each disk header has the format:
+Disks are found by walking a **descriptor length chain**, NOT by scanning for filesystem strings (the old method missed disks — see gotchas). Immediately after the catalogue header there are **8 zero pad bytes**, then one descriptor per disk; each descriptor's `sectionLength` field points at the next, and the chain lands exactly on EOF.
 
-```
-[label_len: 1 byte] [label: N bytes] [fs_len: 1 byte] [fs_name: M bytes]
-```
+Descriptor layout (base `P`):
 
-Recognized filesystem types: `FAT`, `FAT32`, `exFAT`, `NTFS`, `CDFS`, `UDF`.
+| rel | size | field |
+|-----|------|-------|
+| +0 | u8 | marker low byte: `0x03` real disk, `0x13` CD, `0x83` Virtual Root Folder |
+| +1 | u8 | marker high byte (`0x00`) |
+| +8 | u32 | **sectionLength** (descriptor + all content) — drives the chain |
+| +24 | u32 | **root file count** (authoritative; `0xFFFFFFFF` ⇒ 0) |
+| +32 | u16 | label length |
+| +34 | N | label bytes (ASCII) — the disk's display name |
 
-Some disks (e.g., TrueCrypt volumes) may lack a filesystem marker entirely and will not be parseable.
+Walk: parse header → `p = headerEnd + 8` → repeat `diskCount` times: section = `[p, p + sectionLength)`; `p += sectionLength`. Validate by asserting the final `p == fileLength`; if not, fall back to the legacy FS-string scan (below) for formats this doesn't fit.
+
+The disk **label** (descriptor) differs from the **FS volume name** (an in-band `[len][NAME]` string inside the section). FS type is read case-insensitively (`EXFAT`/`exFAT`) and is informational only — it does NOT delimit disks. This correctly handles TrueCrypt volumes and "Virtual Root Folder" pseudo-disks that lack normal FS markers.
+
+### Legacy FS-string scan (fallback only)
+
+Older/edge formats: scan for filesystem strings `[fs_len: 1][fs_name]` with a back-scan for `[label_len: 1][label]`. Recognized FS types: `FAT`, `FAT32`, `exFAT`, `NTFS`, `CDFS`, `UDF`. Used only when the descriptor chain doesn't validate.
 
 ### File Entry Records
 
-Five marker types, all sharing the same prefix structure:
+Six marker types, all sharing the same prefix structure:
 
 ```
 [marker: 2 bytes LE] [name_len: 1 byte] [name: N bytes] [metadata: variable]
@@ -193,6 +204,7 @@ Five marker types, all sharing the same prefix structure:
 | `0x0058` | 12 bytes | modTime(2) + modDate(2) + accTime(2) + accDate(2) + size(4) |
 | `0x000C` | 17 bytes | attributes(1) + modTime(2) + modDate(2) + creTime(2) + creDate(2) + accTime(2) + accDate(2) + size(4) |
 | `0x0048` | 13 bytes | modTime(2) + modDate(2) + 5 unidentified bytes + size(4) — rare; layout not fully reverse-engineered |
+| `0x041C` | 18 bytes | like `0x001C` (mod/cre/acc) + 2 unidentified bytes before size(4) — very rare (1 seen) |
 
 - All timestamps are **DOS date/time format** (same as FAT filesystem)
 - The attribute byte in `0x000C` entries corresponds to DOS file attributes (system, hidden, archive, etc.)
@@ -212,12 +224,15 @@ Directory records form a contiguous block after the file entries. Three type var
 | `0x0C` | 40 bytes |
 | `0x18` | 36 bytes |
 | `0x2C` | 41 bytes |
+| `0x38` | 37 bytes |
 
 Payload fields (uint32 LE, from start of payload): `[nulls][f1][f2][directFileCount][...][DOS date-time + size]`.
 
 | Field | Description |
 |-------|-------------|
 | `depth` | Nesting level (1 = top-level directory, 2+ = subdirectory) |
+| `f1` | Cumulative file-index where this folder's subtree begins in the flat file array |
+| `f2` | Total files in this folder's subtree (so `f1 + f2` = next sibling's `f1`) |
 | `directFileCount` | payload offset +12: number of files directly in this folder (`0xFFFFFFFF` sentinel ⇒ 0) |
 | `f1`, `f2` | Large cumulative counters (reach ~170k for a 17k-file disk; likely byte offsets). **Not used** for tree reconstruction. |
 
@@ -228,6 +243,10 @@ The earlier model — treating `f1`/`f2` as a "global file index / file count" �
 - Files are stored in **pre-order depth-first traversal**: the disk's root files first, then folder-by-folder.
 - The directory records are also in pre-order, each carrying its `depth` and `directFileCount`.
 - Rebuild by walking the dir records with a **depth stack**; each folder consumes its next `directFileCount` files from the flat list. The leading files consumed by no folder (`totalFiles − Σ directFileCount`) are the disk's root files.
+
+**Gotchas / known limitations:**
+- If a directory-record *type* is not recognised, the parser skips those folders entirely and their files spill into the disk root (symptom: a disk root showing hundreds of files that really live in subfolders). When this happens, scan the disk's dir block for `02 00 TT 00` markers with unseen `TT` bytes and add the type + payload length to `DirPayloadLengths`. Known types so far: 0x0C/0x18/0x2C/0x38.
+- File-entry markers can have a non-zero high byte: `0x041C` (18-byte meta — like `0x001C` plus 2 bytes before the size) appears once on the Alpha60 disk. It is now handled; a missing such variant costs one file and can knock the disk's root off by one (symptom seen: Alpha60 root missing `Autorun.inf`).
 
 ### Overall File Structure
 
