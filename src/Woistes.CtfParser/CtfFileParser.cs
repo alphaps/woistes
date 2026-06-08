@@ -17,6 +17,13 @@ namespace Woistes.CtfParser;
 /// </summary>
 public class CtfFileParser : ICtfParser
 {
+    private static readonly Encoding Win1252;
+
+    static CtfFileParser()
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        Win1252 = Encoding.GetEncoding(1252);
+    }
     private const string MagicPrefix = "Catalog 3.";
 
     // File-entry markers and their metadata sizes (bytes after the name).
@@ -198,7 +205,7 @@ public class CtfFileParser : ICtfParser
         for (int k = 0; k < nameLen; k++)
             if (data[nameStart + k] < 0x20) return false;
 
-        var name = Encoding.Default.GetString(data, nameStart, nameLen);
+        var name = Win1252.GetString(data, nameStart, nameLen);
         int payload = nameStart + nameLen;
         uint directFileCount = ReadUInt32At(data, payload + 12);
 
@@ -353,7 +360,7 @@ public class CtfFileParser : ICtfParser
     private static CatalogueEntry ReadFileEntryFull(byte[] data, ref int pos)
     {
         var nameLen = data[pos++];
-        var name = Encoding.Default.GetString(data, pos, nameLen);
+        var name = Win1252.GetString(data, pos, nameLen);
         pos += nameLen;
 
         var modTime = ReadUInt16(data, ref pos);
@@ -377,7 +384,7 @@ public class CtfFileParser : ICtfParser
     private static CatalogueEntry ReadFileEntryShort(byte[] data, ref int pos)
     {
         var nameLen = data[pos++];
-        var name = Encoding.Default.GetString(data, pos, nameLen);
+        var name = Win1252.GetString(data, pos, nameLen);
         pos += nameLen;
 
         var modTime = ReadUInt16(data, ref pos);
@@ -398,7 +405,7 @@ public class CtfFileParser : ICtfParser
     private static CatalogueEntry ReadFileEntryAttr(byte[] data, ref int pos)
     {
         var nameLen = data[pos++];
-        var name = Encoding.Default.GetString(data, pos, nameLen);
+        var name = Win1252.GetString(data, pos, nameLen);
         pos += nameLen;
 
         pos++; // attribute byte
@@ -426,7 +433,7 @@ public class CtfFileParser : ICtfParser
     private static CatalogueEntry ReadFileEntryGid(byte[] data, ref int pos)
     {
         var nameLen = data[pos++];
-        var name = Encoding.Default.GetString(data, pos, nameLen);
+        var name = Win1252.GetString(data, pos, nameLen);
         pos += nameLen;
 
         var modTime = ReadUInt16(data, ref pos);
@@ -448,7 +455,7 @@ public class CtfFileParser : ICtfParser
     private static CatalogueEntry ReadFileEntryFullExt(byte[] data, ref int pos)
     {
         var nameLen = data[pos++];
-        var name = Encoding.Default.GetString(data, pos, nameLen);
+        var name = Win1252.GetString(data, pos, nameLen);
         pos += nameLen;
 
         var modTime = ReadUInt16(data, ref pos);
@@ -486,7 +493,7 @@ public class CtfFileParser : ICtfParser
             diskIds[i] = ReadUInt16(data, ref pos);
 
         var nameLength = ReadUInt16(data, ref pos);
-        var name = Encoding.Default.GetString(data, pos, nameLength);
+        var name = Win1252.GetString(data, pos, nameLength);
         pos += nameLength;
 
         return new CatalogueHeader(name, diskCount, diskIds);
@@ -516,7 +523,7 @@ public class CtfFileParser : ICtfParser
 
             int labelLen = data[p + 32] | (data[p + 33] << 8);
             if (labelLen < 1 || labelLen > 200 || p + 34 + labelLen > data.Length) return null;
-            var label = Encoding.Default.GetString(data, p + 34, labelLen);
+            var label = Win1252.GetString(data, p + 34, labelLen);
 
             // DataStart: just past the label; the file-entry scan starts here and
             // skips forward to the first real entry (past the inline FS node).
@@ -568,7 +575,7 @@ public class CtfFileParser : ICtfParser
                 {
                     if (data[i - back] == back - 1 && back - 1 > 0 && back - 1 < 40)
                     {
-                        label = Encoding.Default.GetString(data, i - back + 1, back - 1);
+                        label = Win1252.GetString(data, i - back + 1, back - 1);
                         break;
                     }
                 }
