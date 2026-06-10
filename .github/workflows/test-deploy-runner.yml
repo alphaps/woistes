@@ -65,38 +65,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t woistes:${{ github.sha }} .
+      - name: Start all services (app + SQL Server)
+        run: docker compose up -d --build --wait
+        timeout-minutes: 5
 
-      - name: Start container
-        run: |
-          docker run -d --name woistes \
-            -p 8080:8080 \
-            -e ASPNETCORE_ENVIRONMENT=Development \
-            woistes:${{ github.sha }}
-
-      - name: Wait for healthy
+      - name: Wait for app healthy
         run: |
           for i in $(seq 1 30); do
-            if curl -sf http://localhost:8080/health; then
-              echo " Container is healthy"
+            if curl -sf http://localhost:5000/health; then
+              echo "App is healthy"
               exit 0
             fi
             sleep 2
           done
-          echo "Container never became healthy"
-          docker logs woistes
+          echo "App never became healthy"
+          docker compose logs
           exit 1
 
       - name: Smoke test - check API responds
         run: |
-          curl -sf http://localhost:8080/health
+          curl -sf http://localhost:5000/health
           echo "API is responding"
 
-      - name: Show container logs
+      - name: Show logs
         if: always()
-        run: docker logs woistes
+        run: docker compose logs
 
-      - name: Stop container
+      - name: Tear down
         if: always()
-        run: docker rm -f woistes
+        run: docker compose down -v
