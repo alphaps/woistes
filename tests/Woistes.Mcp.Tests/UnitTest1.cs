@@ -7,7 +7,7 @@ public class CatalogueToolsTests
     private static CatalogueTools CreateTools(MockHttpHandler handler)
     {
         var http = new HttpClient(handler) { BaseAddress = new Uri("http://test-api") };
-        return new CatalogueTools(http);
+        return new CatalogueTools(new FakeHttpClientFactory(http));
     }
 
     [Fact]
@@ -117,6 +117,15 @@ public class CatalogueToolsTests
 
         await Assert.ThrowsAsync<HttpRequestException>(() => tools.GetCatalogue(999));
     }
+}
+
+public class FakeHttpClientFactory : IHttpClientFactory
+{
+    private readonly HttpClient _client;
+
+    public FakeHttpClientFactory(HttpClient client) => _client = client;
+
+    public HttpClient CreateClient(string name) => _client;
 }
 
 public class MockHttpHandler : HttpMessageHandler
