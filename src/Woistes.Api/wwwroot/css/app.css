@@ -117,6 +117,19 @@ button:hover {
     background: #2980b9;
 }
 
+button.btn-danger {
+    background: #e74c3c;
+}
+
+button.btn-danger:hover {
+    background: #c0392b;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .upload-area {
     margin: 1rem 0;
     padding: 2rem;

@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,13 @@ namespace Woistes.Api.Tests;
 
 public class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private readonly string _dbName = "WoistesTest_" + Guid.NewGuid();
+    private readonly SqliteConnection _connection;
+
+    public TestWebApplicationFactory()
+    {
+        _connection = new SqliteConnection("DataSource=:memory:");
+        _connection.Open();
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -28,7 +35,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(d);
 
             services.AddDbContext<WoistesDbContext>(options =>
-                options.UseInMemoryDatabase(_dbName));
+                options.UseSqlite(_connection));
 
             services.Configure<AllowedEmailsOptions>(opts =>
                 opts.Emails = new List<string> { "test@gmail.com" });
@@ -41,7 +48,19 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 
             services.AddAuthentication()
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", _ => { });
+
+            var sp = services.BuildServiceProvider();
+            using var scope = sp.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<WoistesDbContext>();
+            db.Database.EnsureCreated();
         });
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (disposing)
+            _connection.Dispose();
     }
 
     public HttpClient CreateAnonymousClient()

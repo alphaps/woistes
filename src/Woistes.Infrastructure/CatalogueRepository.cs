@@ -95,12 +95,16 @@ public class CatalogueRepository : ICatalogueRepository
 
     public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
-        var catalogue = await _db.Catalogues.FindAsync([id], ct);
-        if (catalogue is not null)
-        {
-            _db.Catalogues.Remove(catalogue);
-            await _db.SaveChangesAsync(ct);
-        }
+        var diskIds = await _db.Disks
+            .Where(d => d.CatalogueId == id)
+            .Select(d => d.Id)
+            .ToListAsync(ct);
+
+        if (diskIds.Count > 0)
+            await _db.Entries.Where(e => diskIds.Contains(e.DiskId)).ExecuteDeleteAsync(ct);
+
+        await _db.Disks.Where(d => d.CatalogueId == id).ExecuteDeleteAsync(ct);
+        await _db.Catalogues.Where(c => c.Id == id).ExecuteDeleteAsync(ct);
     }
 
     public async Task<List<CatalogueEntry>> GetChildrenAsync(int diskId, long? parentId, CancellationToken ct = default)

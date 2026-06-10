@@ -1,6 +1,8 @@
 @page "/"
+@using Microsoft.JSInterop
 @using Woistes.Domain
 @inject ICatalogueRepository Repository
+@inject IJSRuntime JS
 
 <h1>Catalogues</h1>
 
@@ -34,7 +36,16 @@ else
                     <td>@c.FileCount</td>
                     <td>@c.FolderCount</td>
                     <td>@c.ImportedDate.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td><button @onclick="() => Delete(c.Id)">Delete</button></td>
+                    <td>
+                        @if (_deletingId == c.Id)
+                        {
+                            <button disabled>Deleting...</button>
+                        }
+                        else
+                        {
+                            <button class="btn-danger" @onclick="() => Delete(c.Id)">Delete</button>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>
@@ -43,6 +54,7 @@ else
 
 @code {
     private List<Catalogue>? _catalogues;
+    private int? _deletingId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,7 +63,14 @@ else
 
     private async Task Delete(int id)
     {
+        var name = _catalogues?.FirstOrDefault(c => c.Id == id)?.Name ?? "this catalogue";
+        var confirmed = await JS.InvokeAsync<bool>("confirm", $"Delete \"{name}\" and all its entries?");
+        if (!confirmed) return;
+
+        _deletingId = id;
+        await Task.Yield();
         await Repository.DeleteAsync(id);
+        _deletingId = null;
         _catalogues = await Repository.GetAllAsync();
     }
 }
