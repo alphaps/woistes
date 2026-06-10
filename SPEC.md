@@ -49,6 +49,7 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 - **Public access via NGINX ingress on AKS**: documented in [docs/aks-networking.md](docs/aks-networking.md) — covers the LB health-probe path fix and the HTTP-only OAuth cookie workaround.
 - **Configurable ingress class**: `ingress.className` value (defaults to `nginx` for AKS; set to `traefik` for Rancher Desktop / k3s) so the same chart works locally and in the cloud.
 - **Resilient startup migration** (`DatabaseInitializer`): tolerates concurrent "database/object already exists" errors (rolling-deploy race where two pods migrate at once) and retries transient failures, instead of crash-looping. 5 new tests.
+- **MCP Server** (`Woistes.Mcp`): a stdio-based Model Context Protocol server that exposes the Woistes REST API as tools for Claude Code. Uses the official .NET MCP SDK (`ModelContextProtocol` NuGet v1.4.0). Four tools: `list_catalogues`, `get_catalogue`, `browse_folder`, `search_files` — each makes an HTTP call to the existing API endpoints. Configured in `.mcp.json` for auto-discovery by Claude Code. Base URL configurable via `WOISTES_API_URL` env var (defaults to `http://localhost:5000`). **9 unit tests** verifying HTTP call routing, URL construction, query parameter encoding, and error propagation.
 
 ### Next
 
