@@ -202,6 +202,7 @@ jobs:
           overrides: |
             image.repository:${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}
             image.tag:${{ github.sha }}
+            ingress.host:woistes.westeurope.cloudapp.azure.com
             auth.googleClientId:${{ secrets.GOOGLE_CLIENT_ID }}
             auth.googleClientSecret:${{ secrets.GOOGLE_CLIENT_SECRET }}
             auth.allowedEmails:{${{ secrets.ALLOWED_EMAILS }}}

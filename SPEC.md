@@ -32,9 +32,11 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 
 - **Blazor Web UI** (merged into `Woistes.Api`): Blazor Server components for catalogue dashboard, CTF upload (with import progress bar), tree browser with breadcrumbs, and paginated search. Served alongside the REST API from a single host.
 
-- **Docker & Kubernetes**: multi-stage Dockerfile, docker-compose (app + SQL Server), Helm chart with deployment, service, StatefulSet SQL Server, secrets, and optional ingress. Auto-migration on startup.
+- **Docker & Kubernetes**: multi-stage Dockerfile (with `curl` installed in runtime image for healthcheck), docker-compose (app + SQL Server), Helm chart with deployment, service, StatefulSet SQL Server, secrets, and ingress with optional TLS. Auto-migration on startup.
 
-- **CI/CD pipeline** (GitHub Actions): `test` (gates build) → `buildImage` → `deploy` to AKS via Helm bake, old image cleanup. OIDC auth with federated credentials (no secrets stored).
+- **CI/CD pipeline** (GitHub Actions):
+  - **AKS workflow** (`azure-kubernetes-service-helm.yml`): `test` (gates build) → `buildImage` → `deploy` to AKS via Helm bake, old image cleanup. OIDC auth with federated credentials (no secrets stored).
+  - **Test-deploy-on-runner workflow** (`test-deploy-runner.yml`): lightweight alternative that does NOT deploy to AKS — runs `docker compose up` (app + SQL Server) on the GitHub-hosted runner itself for smoke testing. Job graph: `test` → `deploy` (docker compose + health check), with `coverage` running in parallel (non-blocking). Useful for validating the container works end-to-end without touching the cluster.
 - **Code coverage** (GitHub Actions, informational): a `coverage` job runs in parallel with `test`, collects coverage via `coverlet.collector` (`--collect:"XPlat Code Coverage" --settings coverlet.runsettings`), renders an HTML + Markdown report with ReportGenerator (posted to the job summary, uploaded as an artifact). It is `continue-on-error` and in no `needs` chain, so it never blocks build/deploy. Kept off the gating `test` job because instrumentation slows the parser tests (~12s → ~2m). `coverlet.runsettings` excludes generated/untestable code (EF migrations, model snapshot, design-time factory) and skips auto-properties so the number reflects real logic. **Run locally** (with `sampleCTF/` present) merged coverage is ~82% line / ~69% branch: parser 99.7%, endpoints/config 100%, repository ~56–85%.
 
   Two coverage caveats, both accepted:
@@ -43,6 +45,7 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 
   `TestResults/`, `CoverageReport/`, and `*.cobertura.xml` are gitignored.
 - **Helm chart hardened for AKS**: ingressClassName for NGINX, SQL Server securityContext (runAsUser 0, fsGroup 10001) for Azure container runtime compatibility.
+- **TLS support in Helm chart**: ingress template supports cert-manager annotations (`cert-manager.io/cluster-issuer`), TLS block with configurable secretName, and nginx ssl-redirect. Enabled by default (`ingress.tls.enabled: true`); disable with `--set ingress.tls.enabled=false` for local dev. Requires cert-manager + a `ClusterIssuer` (e.g. `letsencrypt-prod`) installed on the cluster.
 - **Google OAuth authentication**: cookie-based auth with Google login, email allowlist middleware (403 for non-permitted emails). Allowed emails configured via Kubernetes secret (CSV) or appsettings (array). User-secrets for local dev. Google ClientId/ClientSecret/AllowedEmails passed as Helm overrides from GitHub Actions secrets (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_EMAILS`). 7 new auth tests.
 - **Logout**: `POST /logout` (sidebar shows signed-in email + Sign out button), redirects to an anonymous `/loggedout` confirmation page that links back to login. Login challenge sends `prompt=select_account` so users can sign in with a different Google account.
 - **Access-denied UX**: a non-allowlisted (but Google-authenticated) user is redirected to an anonymous `/denied` page naming their account, with a "Sign out & switch account" button — instead of a bare 403 that trapped them. The allowlist middleware exempts `/denied`, `/login`, `/logout`, `/loggedout`, `/health` so blocked users can escape. 5 auth tests total for logout + denied flow.
@@ -53,7 +56,7 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 
 ### Next
 
-- **TLS / HTTPS** for the public endpoint (cert-manager + Let's Encrypt), then revert the HTTP-only OAuth cookie workaround
+- **Deploy TLS**: install cert-manager + ClusterIssuer on AKS, set `ingress.host` and `ingress.tls.enabled=true` in the deploy workflow, then revert the HTTP-only OAuth cookie workaround
 - Items from "Future Phases" section
 
 ---
