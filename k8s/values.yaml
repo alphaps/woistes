@@ -15,6 +15,10 @@ ingress:
   # Ingress controller class. "nginx" for AKS; override to "traefik" for
   # Rancher Desktop / k3s (e.g. --set ingress.className=traefik).
   className: nginx
+  tls:
+    enabled: true
+    secretName: woistes-tls
+    clusterIssuer: letsencrypt-prod
 
 sqlserver:
   password: Woistes_Prod_Change_Me!
