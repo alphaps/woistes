@@ -32,7 +32,7 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 
 - **Blazor Web UI** (merged into `Woistes.Api`): Blazor Server components for catalogue dashboard, CTF upload (with import progress bar), tree browser with breadcrumbs, and paginated search. Served alongside the REST API from a single host.
 
-- **Docker & Kubernetes**: multi-stage Dockerfile (with `curl` installed in runtime image for healthcheck), docker-compose (app + SQL Server), Helm chart with deployment, service, StatefulSet SQL Server, secrets, and ingress with optional TLS. Auto-migration on startup.
+- **Docker & Kubernetes**: multi-stage Dockerfile (with `curl` installed in runtime image for healthcheck), docker-compose (app + SQL Server), Helm chart with deployment, service, StatefulSet SQL Server, secrets, and ingress with TLS (enabled by default). Auto-migration on startup.
 
 - **CI/CD pipeline** (GitHub Actions):
   - **AKS workflow** (`azure-kubernetes-service-helm.yml`): `test` (gates build) → `buildImage` → `deploy` to AKS via Helm bake, old image cleanup. OIDC auth with federated credentials (no secrets stored).
@@ -45,18 +45,17 @@ Woistes runs as a C# / .NET Core application deployed on Azure AKS (Kubernetes) 
 
   `TestResults/`, `CoverageReport/`, and `*.cobertura.xml` are gitignored.
 - **Helm chart hardened for AKS**: ingressClassName for NGINX, SQL Server securityContext (runAsUser 0, fsGroup 10001) for Azure container runtime compatibility.
-- **TLS support in Helm chart**: ingress template supports cert-manager annotations (`cert-manager.io/cluster-issuer`), TLS block with configurable secretName, and nginx ssl-redirect. Enabled by default (`ingress.tls.enabled: true`); disable with `--set ingress.tls.enabled=false` for local dev. Requires cert-manager + a `ClusterIssuer` (e.g. `letsencrypt-prod`) installed on the cluster.
+- **TLS / HTTPS (live)**: cert-manager + Let's Encrypt `ClusterIssuer` (`letsencrypt-prod`) on AKS, auto-issuing and auto-renewing certs via HTTP-01 challenge. Ingress template supports cert-manager annotations (`cert-manager.io/cluster-issuer`), TLS block with configurable secretName, and nginx ssl-redirect. Enabled by default (`ingress.tls.enabled: true`); disable with `--set ingress.tls.enabled=false` for local dev. The AKS deploy workflow passes `ingress.host:woistes.westeurope.cloudapp.azure.com` in the Helm bake overrides. The HTTP-only OAuth cookie workaround (`SameSite=Lax`, `SecurePolicy=SameAsRequest`) is now commented out — no longer needed with TLS; can be re-enabled for local HTTP dev if needed.
 - **Google OAuth authentication**: cookie-based auth with Google login, email allowlist middleware (403 for non-permitted emails). Allowed emails configured via Kubernetes secret (CSV) or appsettings (array). User-secrets for local dev. Google ClientId/ClientSecret/AllowedEmails passed as Helm overrides from GitHub Actions secrets (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_EMAILS`). 7 new auth tests.
 - **Logout**: `POST /logout` (sidebar shows signed-in email + Sign out button), redirects to an anonymous `/loggedout` confirmation page that links back to login. Login challenge sends `prompt=select_account` so users can sign in with a different Google account.
 - **Access-denied UX**: a non-allowlisted (but Google-authenticated) user is redirected to an anonymous `/denied` page naming their account, with a "Sign out & switch account" button — instead of a bare 403 that trapped them. The allowlist middleware exempts `/denied`, `/login`, `/logout`, `/loggedout`, `/health` so blocked users can escape. 5 auth tests total for logout + denied flow.
-- **Public access via NGINX ingress on AKS**: documented in [docs/aks-networking.md](docs/aks-networking.md) — covers the LB health-probe path fix and the HTTP-only OAuth cookie workaround.
+- **Public access via NGINX ingress on AKS**: documented in [docs/aks-networking.md](docs/aks-networking.md) — covers the LB health-probe path fix. Now served over HTTPS (`https://woistes.westeurope.cloudapp.azure.com`).
 - **Configurable ingress class**: `ingress.className` value (defaults to `nginx` for AKS; set to `traefik` for Rancher Desktop / k3s) so the same chart works locally and in the cloud.
 - **Resilient startup migration** (`DatabaseInitializer`): tolerates concurrent "database/object already exists" errors (rolling-deploy race where two pods migrate at once) and retries transient failures, instead of crash-looping. 5 new tests.
 - **MCP Server** (`Woistes.Mcp`): a stdio-based Model Context Protocol server that exposes the Woistes REST API as tools for Claude Code. Uses the official .NET MCP SDK (`ModelContextProtocol` NuGet v1.4.0). Four tools: `list_catalogues`, `get_catalogue`, `browse_folder`, `search_files` — each makes an HTTP call to the existing API endpoints. Configured in `.mcp.json` for auto-discovery by Claude Code. Base URL configurable via `WOISTES_API_URL` env var (defaults to `http://localhost:5000`). **9 unit tests** verifying HTTP call routing, URL construction, query parameter encoding, and error propagation.
 
 ### Next
 
-- **Deploy TLS**: install cert-manager + ClusterIssuer on AKS, set `ingress.host` and `ingress.tls.enabled=true` in the deploy workflow, then revert the HTTP-only OAuth cookie workaround
 - Items from "Future Phases" section
 
 ---

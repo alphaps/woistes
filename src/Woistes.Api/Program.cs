@@ -58,13 +58,9 @@ if (googleConfigured)
     {
         options.ClientId = googleClientId!;
         options.ClientSecret = googleClientSecret!;
-        // The deployment is currently served over plain HTTP (no TLS cert yet).
-        // The default correlation cookie is SameSite=None+Secure, which browsers
-        // refuse to store over HTTP, causing "Correlation failed" on callback.
-        // Lax is sent on the top-level GET redirect back from Google.
-        // TODO: revert to SameSite=None+Always once TLS is configured.
-        options.CorrelationCookie.SameSite = SameSiteMode.Lax;
-        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        // HTTP-only workaround (no longer needed with TLS):
+        // options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+        // options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     });
 }
 
