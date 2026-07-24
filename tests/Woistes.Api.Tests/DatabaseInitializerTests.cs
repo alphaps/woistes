@@ -55,10 +55,11 @@ public class DatabaseInitializerTests
     }
 
     [Fact]
-    public void IsBenign_DetectsAlreadyExistsRegardlessOfCase()
+    public void IsBenign_DetectsDatabaseAlreadyExists()
     {
-        Assert.True(DatabaseInitializer.IsBenign(new Exception("Database 'X' ALREADY EXISTS.")));
-        Assert.True(DatabaseInitializer.IsBenign(new Exception("There is already an object named 'Foo'")));
+        Assert.True(DatabaseInitializer.IsBenign(new Exception("Database 'Woistes' ALREADY EXISTS.")));
+        Assert.True(DatabaseInitializer.IsBenign(new Exception("Database 'X' already exists. Choose a different name.")));
+        Assert.False(DatabaseInitializer.IsBenign(new Exception("There is already an object named 'PK_Entries'")));
         Assert.False(DatabaseInitializer.IsBenign(new Exception("connection refused")));
     }
 }

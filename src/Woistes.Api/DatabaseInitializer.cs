@@ -35,12 +35,14 @@ public static class DatabaseInitializer
 
     /// <summary>
     /// True for errors that mean the schema already exists (a concurrent
-    /// instance won the race), which are safe to ignore.
+    /// instance won the race), which are safe to ignore. Only matches
+    /// database-level and table-level "already exists" — NOT constraint or
+    /// index conflicts inside a migration, which indicate a real failure.
     /// </summary>
     public static bool IsBenign(Exception ex)
     {
         var msg = ex.Message;
-        return msg.Contains("already exists", StringComparison.OrdinalIgnoreCase)
-            || msg.Contains("there is already an object named", StringComparison.OrdinalIgnoreCase);
+        return msg.Contains("Database '", StringComparison.OrdinalIgnoreCase)
+               && msg.Contains("already exists", StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Woistes.Infrastructure;
 
@@ -11,9 +12,11 @@ using Woistes.Infrastructure;
 namespace Woistes.Infrastructure.Migrations
 {
     [DbContext(typeof(WoistesDbContext))]
-    partial class WoistesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260721152651_SwitchToSequenceEntryIds")]
+    partial class SwitchToSequenceEntryIds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -9,6 +9,7 @@ public class CatalogueEntryConfiguration : IEntityTypeConfiguration<CatalogueEnt
     public void Configure(EntityTypeBuilder<CatalogueEntry> builder)
     {
         builder.HasKey(e => e.Id);
+        builder.Property(e => e.Id).UseSequence("EntryIdSequence");
         builder.Property(e => e.Name).HasMaxLength(512).IsRequired();
         builder.Property(e => e.FullPath).HasMaxLength(2048).IsRequired();
 
